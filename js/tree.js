@@ -80,7 +80,7 @@ Lead.prototype.heading = function(destination) {
 Lead.prototype.arrived = function() {
   // Use dot product to determine what side of the destination the current position is on.
   // http://forums.anandtech.com/showthread.php?t=162930
-  return vectors.dot(vectors.subtract(this.destination, this.position), this.direction) >= 0;
+  return vectors.dot(vectors.subtract(this.destination, this.position), this.direction) <= 0;
 };
 
 Lead.prototype.update = function(msDuration) {
