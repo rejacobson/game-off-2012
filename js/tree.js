@@ -1,6 +1,10 @@
 var gamejs = require('gamejs');
 var vectors = gamejs.utils.vectors;
 
+function roll(max) {
+  return Math.floor(Math.random() * max);
+};
+
 vectors.len_sq = function(v) {
   return v[0]*v[0] + v[1]*v[1];
 };
@@ -54,8 +58,8 @@ console.log('new Lead() -- 1');
   this.tree = tree;
   
   var defaults = {
-    lifespan: 5,
-    speed: 30,
+    lifespan: 15,
+    speed: 100,
     step: 50,
     
     position: [0, 0],
@@ -78,16 +82,8 @@ Lead.prototype.branch = function(settings) {
   this.tree.add_lead(settings);  
 };
 
-Lead.prototype.next_step = function() {
-  var new_direction;
-
-  if (this.lifespan % 2 == 0) {
-    new_direction = vectors.leftNormal(this.direction); 
-  } else {
-    new_direction = vectors.rightNormal(this.direction); 
-  }
-
-  var new_destination = vectors.add(this.destination, vectors.multiply(new_direction, this.step));
+Lead.prototype.grow = function() {
+  var new_destination = this.available_destinations()[roll(3)];
   this.position = this.destination.slice(0);
   this.heading(new_destination);
 };
@@ -96,6 +92,18 @@ Lead.prototype.heading = function(destination) {
   this.destination = destination; // the destination of the line
   this.direction = vectors.unit(vectors.subtract(this.destination, this.position)); // unit direction of the heading
   this.velocity = vectors.multiply(this.direction, this.speed);
+};
+
+Lead.prototype.available_destinations = function() {
+  var forward = this.direction,
+      left = vectors.leftNormal(this.direction),
+      right = vectors.rightNormal(this.direction);
+
+  return [
+    vectors.add(this.destination, vectors.multiply(forward, this.step)),
+    vectors.add(this.destination, vectors.multiply(left, this.step)),
+    vectors.add(this.destination, vectors.multiply(right, this.step))
+  ];
 };
 
 Lead.prototype.has_arrived = function() {
@@ -112,7 +120,7 @@ Lead.prototype.update = function(msDuration) {
 
   if (this.has_arrived()) {
     this.lifespan--;
-    this.next_step();
+    this.grow();
   }
 };
 
