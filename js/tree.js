@@ -36,7 +36,7 @@ var Tree = exports.Tree = function() {
 
   this.add_lead({
     position: [500, 500],
-    width: 2,
+    width: 15,
     destination: [500, 450],
     trend: [0, -1]
   });
@@ -82,18 +82,17 @@ var Lead = function(tree, settings) {
 
 Lead.prototype.branch = function(settings) {
   var forced_settings = {
-    width: this.width / 2
+    width: Math.round(this.width / 2)
   };
   _.extend(settings, forced_settings);
   this.tree.add_lead(settings);  
 };
 
 Lead.prototype.grow = function() {
+  var self = this;
   var dests = this.candidate_destinations();
 
   if (this.trend) {
-    var self = this;
-
     var dirs_and_dots = [];
     _.each(this.candidate_directions(), function(d, i) {
       dirs_and_dots.push({dir: d, dest: dests[i], dot: vectors.dot(self.trend, d)});
@@ -121,8 +120,24 @@ Lead.prototype.grow = function() {
 
   var new_destination = dests[roll(dests.length)];
 
+  // Branching directions
+  var branch_directions = [vectors.leftNormal(this.direction), vectors.rightNormal(this.direction)];
+
   this.position = this.destination.slice(0);
   this.heading(new_destination);
+
+  if (roll(100) > 60) {
+    branch_directions = _.without(branch_directions, this.direction); //_.reject(branch_directions, function(d) { d == this.direction });
+    var dir = branch_directions[roll(branch_directions.length)];
+    var dest = vectors.add(this.position, vectors.multiply(dir, self.step)); 
+    this.branch({
+      position: this.position.slice(0),
+      last_position: this.position.slice(0),
+      destination: dest,
+      trend: dir,
+      lifespan: this.lifespan
+    });  
+  }
 };
 
 Lead.prototype.heading = function(destination) {
@@ -165,7 +180,7 @@ Lead.prototype.update = function(msDuration) {
 
   if (this.has_arrived()) {
     this.lifespan--;
-    this.grow();
+    if (this.lifespan > 0) this.grow();
   }
 };
 
