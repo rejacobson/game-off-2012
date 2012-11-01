@@ -40,6 +40,7 @@ var Tree = exports.Tree = function() {
     destination: [500, 450],
     trend: [0, -1],
     momentum: 3,
+    sprouts: 6
   });
 };
 
@@ -70,6 +71,7 @@ var Lead = function(tree, settings) {
     step: 50,
     trend: null,
     momentum: 0,
+    sprouts: 0,
     
     position: [0, 0],
     last_position: [0, 0],
@@ -81,6 +83,10 @@ var Lead = function(tree, settings) {
   _.extend(this, defaults, settings);
 
   this.heading(settings.destination);
+};
+
+Lead.prototype.sprout_percentage = function() {
+  return Math.round(this.sprouts / this.lifespan * 100);
 };
 
 Lead.prototype.branch = function(settings) {
@@ -133,7 +139,7 @@ Lead.prototype.grow = function() {
   this.position = this.destination.slice(0);
   this.heading(new_destination);
 
-  if (this.generation < 3 && this.width >= 2 && roll(100) > 60) {
+  if (this.generation < 3 && this.width >= 2 && roll(100) < this.sprout_percentage()) {
     branch_directions = _.without(branch_directions, this.direction); //_.reject(branch_directions, function(d) { d == this.direction });
     var dir = branch_directions[roll(branch_directions.length)];
     var dest = vectors.add(this.position, vectors.multiply(dir, self.step)); 
@@ -142,9 +148,11 @@ Lead.prototype.grow = function() {
       last_position: this.position.slice(0),
       destination: dest,
       trend: dir,
-      lifespan: this.lifespan,
-      momentum: 3
+      lifespan: 8,
+      momentum: 3,
+      sprouts: 2
     });  
+    this.sprouts--;
   }
 };
 
