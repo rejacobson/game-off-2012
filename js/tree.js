@@ -33,14 +33,16 @@ vectors.round = function(v) {
 
 var Tree = exports.Tree = function() {
   this.leads = [];
+  this.base = [500, 500];
 
   this.add_lead({
-    position: [500, 500],
+    position: this.base.slice(0),
     width: 15,
     destination: [500, 450],
     trend: [0, -1],
     momentum: 3,
-    sprouts: 6
+    sprouts: 6,
+    bounds: [null, null, null, 450]
   });
 };
 
@@ -72,6 +74,7 @@ var Lead = function(tree, settings) {
     trend: null,
     momentum: 0,
     sprouts: 0,
+    bounds: [null, null, null, null], // left, top, right, bottom bounds
     
     position: [0, 0],
     last_position: [0, 0],
@@ -83,6 +86,13 @@ var Lead = function(tree, settings) {
   _.extend(this, defaults, settings);
 
   this.heading(settings.destination);
+};
+
+Lead.prototype.in_bounds = function(position) {
+  return (this.bounds[0] == null || position[0] >= this.bounds[0]) &&
+         (this.bounds[1] == null || position[1] >= this.bounds[1]) &&
+         (this.bounds[2] == null || position[0] <= this.bounds[2]) &&
+         (this.bounds[3] == null || position[1] <= this.bounds[3]);
 };
 
 Lead.prototype.sprout_percentage = function() {
@@ -134,6 +144,10 @@ Lead.prototype.grow = function() {
     }
 
     var new_destination = dests[roll(dests.length)];
+
+    if (!this.in_bounds(new_destination)) {
+      new_destination = vectors.add(self.destination, vectors.multiply(this.direction, self.step));
+    }
   }
 
   this.position = this.destination.slice(0);
@@ -143,16 +157,20 @@ Lead.prototype.grow = function() {
     branch_directions = _.without(branch_directions, this.direction); //_.reject(branch_directions, function(d) { d == this.direction });
     var dir = branch_directions[roll(branch_directions.length)];
     var dest = vectors.add(this.position, vectors.multiply(dir, self.step)); 
-    this.branch({
-      position: this.position.slice(0),
-      last_position: this.position.slice(0),
-      destination: dest,
-      trend: dir,
-      lifespan: 8,
-      momentum: 3,
-      sprouts: 2
-    });  
-    this.sprouts--;
+
+    if (this.in_bounds(dest)) {
+      this.branch({
+        position: this.position.slice(0),
+        last_position: this.position.slice(0),
+        destination: dest,
+        trend: dir,
+        lifespan: 8,
+        momentum: 3,
+        sprouts: 2,
+        bounds: this.bounds
+      });  
+      this.sprouts--;
+    }
   }
 };
 
@@ -195,6 +213,7 @@ Lead.prototype.update = function(msDuration) {
   this.position = vectors.round(vectors.add(this.position, vectors.multiply(this.velocity, msDuration)));
 
   if (this.has_arrived()) {
+    if (!this.in_bounds(this.position)) this.lifespan = 0;
     if (this.momentum > 0) this.momentum--;
     if (this.lifespan > 0) {
       this.lifespan--;
