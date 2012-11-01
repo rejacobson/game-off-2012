@@ -38,7 +38,8 @@ var Tree = exports.Tree = function() {
     position: [500, 500],
     width: 15,
     destination: [500, 450],
-    trend: [0, -1]
+    trend: [0, -1],
+    momentum: 3,
   });
 };
 
@@ -63,10 +64,12 @@ var Lead = function(tree, settings) {
   this.tree = tree;
   
   var defaults = {
+    generation: 0,
     lifespan: 15,
     speed: 100,
     step: 50,
     trend: null,
+    momentum: 0,
     
     position: [0, 0],
     last_position: [0, 0],
@@ -82,6 +85,7 @@ var Lead = function(tree, settings) {
 
 Lead.prototype.branch = function(settings) {
   var forced_settings = {
+    generation: this.generation + 1,
     width: Math.round(this.width / 2)
   };
   _.extend(settings, forced_settings);
@@ -90,43 +94,46 @@ Lead.prototype.branch = function(settings) {
 
 Lead.prototype.grow = function() {
   var self = this;
-  var dests = this.candidate_destinations();
-
-  if (this.trend) {
-    var dirs_and_dots = [];
-    _.each(this.candidate_directions(), function(d, i) {
-      dirs_and_dots.push({dir: d, dest: dests[i], dot: vectors.dot(self.trend, d)});
-    }); 
-   
-    // Sort by the dot product
-    dirs_and_dots.sort(function(a, b) {
-      return a.dot - b.dot;
-    });
-
-    // Remove the negative direction
-    if (dirs_and_dots[0].dot < 0) dirs_and_dots.splice(0, 1); 
-
-    // Weight the destinations
-    dests = [];
-    _.each(dirs_and_dots, function(d) {
-      var n = Math.floor(d.dot + 1) * 2;
-      for (; n > 0; n--) {
-        dests.push(d.dest);
-      }
-    });
-
-    dests = _.shuffle(dests);
-  }
-
-  var new_destination = dests[roll(dests.length)];
-
   // Branching directions
   var branch_directions = [vectors.leftNormal(this.direction), vectors.rightNormal(this.direction)];
+  var dests = this.candidate_destinations();
+
+  if (this.momentum > 0) {
+    var new_destination = vectors.add(self.destination, vectors.multiply(this.direction, self.step));
+  } else {
+    if (this.trend) {
+      var dirs_and_dots = [];
+      _.each(this.candidate_directions(), function(d, i) {
+        dirs_and_dots.push({dir: d, dest: dests[i], dot: vectors.dot(self.trend, d)});
+      }); 
+     
+      // Sort by the dot product
+      dirs_and_dots.sort(function(a, b) {
+        return a.dot - b.dot;
+      });
+
+      // Remove the negative direction
+      if (dirs_and_dots[0].dot < 0) dirs_and_dots.splice(0, 1); 
+
+      // Weight the destinations
+      dests = [];
+      _.each(dirs_and_dots, function(d) {
+        var n = Math.floor(d.dot + 1) * 4;
+        for (; n > 0; n--) {
+          dests.push(d.dest);
+        }
+      });
+
+      dests = _.shuffle(dests);
+    }
+
+    var new_destination = dests[roll(dests.length)];
+  }
 
   this.position = this.destination.slice(0);
   this.heading(new_destination);
 
-  if (roll(100) > 60) {
+  if (this.generation < 3 && this.width >= 2 && roll(100) > 60) {
     branch_directions = _.without(branch_directions, this.direction); //_.reject(branch_directions, function(d) { d == this.direction });
     var dir = branch_directions[roll(branch_directions.length)];
     var dest = vectors.add(this.position, vectors.multiply(dir, self.step)); 
@@ -135,7 +142,8 @@ Lead.prototype.grow = function() {
       last_position: this.position.slice(0),
       destination: dest,
       trend: dir,
-      lifespan: this.lifespan
+      lifespan: this.lifespan,
+      momentum: 3
     });  
   }
 };
@@ -179,8 +187,11 @@ Lead.prototype.update = function(msDuration) {
   this.position = vectors.round(vectors.add(this.position, vectors.multiply(this.velocity, msDuration)));
 
   if (this.has_arrived()) {
-    this.lifespan--;
-    if (this.lifespan > 0) this.grow();
+    if (this.momentum > 0) this.momentum--;
+    if (this.lifespan > 0) {
+      this.lifespan--;
+      this.grow();
+    }
   }
 };
 
