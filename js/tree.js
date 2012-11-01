@@ -25,14 +25,20 @@ vectors.toString = function(v) {
   return v[0]+':'+v[1];
 };
 
+vectors.round = function(v) {
+  v[0] = Math.round(v[0]);
+  v[1] = Math.round(v[1]);
+  return v;
+};
 
 var Tree = exports.Tree = function() {
   this.leads = [];
 
   this.add_lead({
-    position: [500, 400],
+    position: [500, 500],
     width: 2,
-    destination: [500, 350]
+    destination: [500, 450],
+    trend: [0, -1]
   });
 };
 
@@ -54,13 +60,13 @@ Tree.prototype.add_lead = function(settings) {
 
 
 var Lead = function(tree, settings) {
-console.log('new Lead() -- 1');
   this.tree = tree;
   
   var defaults = {
     lifespan: 15,
     speed: 100,
     step: 50,
+    trend: null,
     
     position: [0, 0],
     last_position: [0, 0],
@@ -83,7 +89,38 @@ Lead.prototype.branch = function(settings) {
 };
 
 Lead.prototype.grow = function() {
-  var new_destination = this.available_destinations()[roll(3)];
+  var dests = this.candidate_destinations();
+
+  if (this.trend) {
+    var self = this;
+
+    var dirs_and_dots = [];
+    _.each(this.candidate_directions(), function(d, i) {
+      dirs_and_dots.push({dir: d, dest: dests[i], dot: vectors.dot(self.trend, d)});
+    }); 
+   
+    // Sort by the dot product
+    dirs_and_dots.sort(function(a, b) {
+      return a.dot - b.dot;
+    });
+
+    // Remove the negative direction
+    if (dirs_and_dots[0].dot < 0) dirs_and_dots.splice(0, 1); 
+
+    // Weight the destinations
+    dests = [];
+    _.each(dirs_and_dots, function(d) {
+      var n = Math.floor(d.dot + 1) * 2;
+      for (; n > 0; n--) {
+        dests.push(d.dest);
+      }
+    });
+
+    dests = _.shuffle(dests);
+  }
+
+  var new_destination = dests[roll(dests.length)];
+
   this.position = this.destination.slice(0);
   this.heading(new_destination);
 };
@@ -94,16 +131,24 @@ Lead.prototype.heading = function(destination) {
   this.velocity = vectors.multiply(this.direction, this.speed);
 };
 
-Lead.prototype.available_destinations = function() {
-  var forward = this.direction,
-      left = vectors.leftNormal(this.direction),
-      right = vectors.rightNormal(this.direction);
+Lead.prototype.candidate_destinations = function() {
+  var directions = this.candidate_directions();
+  var destinations = [];
 
+  var self = this;
+  _.each(directions, function(d) {
+    destinations.push( vectors.add(self.destination, vectors.multiply(d, self.step)) );
+  });
+
+  return destinations;
+};
+
+Lead.prototype.candidate_directions = function() {
   return [
-    vectors.add(this.destination, vectors.multiply(forward, this.step)),
-    vectors.add(this.destination, vectors.multiply(left, this.step)),
-    vectors.add(this.destination, vectors.multiply(right, this.step))
-  ];
+    this.direction,
+    vectors.leftNormal(this.direction),
+    vectors.rightNormal(this.direction)
+  ]; 
 };
 
 Lead.prototype.has_arrived = function() {
@@ -116,7 +161,7 @@ Lead.prototype.update = function(msDuration) {
   if (this.lifespan <= 0) return;
 
   this.last_position = this.position.slice(0);
-  this.position = vectors.add(this.position, vectors.multiply(this.velocity, msDuration));
+  this.position = vectors.round(vectors.add(this.position, vectors.multiply(this.velocity, msDuration)));
 
   if (this.has_arrived()) {
     this.lifespan--;
