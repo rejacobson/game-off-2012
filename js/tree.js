@@ -31,9 +31,16 @@ vectors.round = function(v) {
   return v;
 };
 
-var Tree = exports.Tree = function() {
+var Tree = exports.Tree = function(settings) {
   this.leads = [];
   this.base = [500, 500];
+
+  this.settings = {
+    onBend: function() {},
+    onBranch: function() {},
+    onGrow: function() {}
+  };
+  _.extend(this.settings, settings);
 
   this.add_lead({
     position: this.base.slice(0),
@@ -60,7 +67,11 @@ Tree.prototype.draw = function(display) {
 };
 
 Tree.prototype.add_lead = function(settings) {
-  this.leads.push(new Lead(this, settings));
+  var lead = new Lead(this, settings);
+  this.leads.push(lead);
+  if (this.settings.onBranch) {
+    this.settings.onBranch.call(lead);
+  }
 };
 
 

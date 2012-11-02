@@ -1,15 +1,43 @@
 var gamejs = require('gamejs');
 var input = require('input');
 var tree = require('tree');
+var terrain = require('terrain');
 
 
 var GameScene = exports.GameScene = function(game) {
   this.game = game;
   this.input_router = new input.Router();
-
   this.entities = []; 
+
+  var platforms = new terrain.PlatformManager();
   
-  this.entities.push(new tree.Tree());
+  var trunk = new tree.Tree({
+    // Called when a branch changes direction
+    onBend: function() {
+
+    },
+
+    // Called when a new branch is spawned
+    onBranch: function() {
+console.log('New Branch!!!!');
+console.log(this);
+    },
+
+    // Called when a branch is updated
+    onGrow: function(msDuration) {
+
+    }
+  });
+
+  this.entities.push(trunk);
+  this.entities.push(platforms);
+
+  platforms.insert(new terrain.Platform(100, 300, 200));
+  platforms.insert(new terrain.Platform(200, 400, 300));
+  platforms.insert(new terrain.Platform(300, 350, 400));
+  platforms.insert(new terrain.Platform(180, 300, 250));
+
+
 
   /////////////////////////
   // Update
@@ -18,7 +46,7 @@ var GameScene = exports.GameScene = function(game) {
     this.input_router.update(msDuration);
 
     _.each(this.entities, function(e) {
-      e.update(msDuration);
+      if (e.update) e.update(msDuration);
     });
   }
   
@@ -30,7 +58,7 @@ var GameScene = exports.GameScene = function(game) {
     //display.clear();
 
     _.each(this.entities, function(e) {
-      e.draw(displays['background']);
+      if (e.draw) e.draw(displays['background']);
     });
   }
   

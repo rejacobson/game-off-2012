@@ -1,28 +1,28 @@
 var gamejs = require('gamejs');
 
 var PlatformManager = exports.PlatformManager = function(settings) {
-  var default = {
+  var defaults = {
     height: 500,
     buckets: 20
   };
   this.settings = _.extend(defaults, settings); 
   this.settings.bucket_size = this.settings.height / this.settings.buckets;
 
-  var spatial_partition = []; 
-
+  this.spatial_partition = []; 
 };
 
-PlatformManager.prototype.addPlatform = function(platform) {
-  var bucket = Math.floor(platform.top / this.settings.bucket_size);
-  if (!this.spatial_partition[bucket]) this.spatial_partition[bucket] = [];
-
-  this.spatial_partition[bucket].push(platform);
-
-  if (this.spatial_partition[bucket].length > 1) {
-    this.spatial_partition[bucket].sort(function(a, b) { return a - b; });
-  } 
-
+PlatformManager.prototype.insert = function(platform) {
+  var index = this.getBucketIndex(platform.top);
+  if (!this.spatial_partition[index]) this.spatial_partition[index] = [];
+  this.spatial_partition[index].push(platform);
+  if (this.spatial_partition[index].length > 1) {
+    this.spatial_partition[index].sort(function(a, b) { return a - b; });
+  }
   return platform;
+};
+
+PlatformManager.prototype.getBucketIndex = function(y) {
+  return Math.floor(y / this.settings.bucket_size);
 };
 
 PlatformManager.prototype.platforms = function(bucket) {
@@ -43,9 +43,21 @@ PlatformManager.prototype.closestPlatform = function(position) {
   }
 };
 
+PlatformManager.prototype.draw = function(display) {
+  _.each(this.spatial_partition, function(bucket) {
+    _.each(bucket, function(platform) {
+      platform.draw(display);
+    });
+  });
+};
+
 
 var Platform = exports.Platform = function(left, right, top) {
   this.left = left;
   this.right = right;
   this.top = top;
+};
+
+Platform.prototype.draw = function(display) {
+  gamejs.draw.line(display, '#ff0000', [this.left, this.top], [this.right, this.top], 1);
 };
