@@ -25,12 +25,12 @@ var GameScene = exports.GameScene = function(game) {
   /////////////////////////
   // Draw
   /////////////////////////
-  this.draw = function(display) {
+  this.draw = function(displays) {
     // Clear the canvas before drawing
     //display.clear();
 
     _.each(this.entities, function(e) {
-      e.draw(display);
+      e.draw(displays['background']);
     });
   }
   

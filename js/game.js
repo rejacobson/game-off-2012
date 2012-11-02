@@ -22,10 +22,9 @@ var requestAnimationFrame=(function(){
      
 })();
 
-var Director = exports.Director = function(display) {
+var Director = exports.Director = function(displays) {
   var onAir = false;
   var activeScene = null;
-  this.display = display;
   var last_t;
 
   function tick(t){
@@ -39,7 +38,7 @@ var Director = exports.Director = function(display) {
       tick_logic(msDuration);
       tick_render(msDuration);
     }
-    requestAnimationFrame(tick, display._canvas);
+    requestAnimationFrame(tick);
   }
 
   function tick_logic(msDuration){
@@ -58,7 +57,7 @@ var Director = exports.Director = function(display) {
   }
 
   function tick_render(msDuration){
-    if (activeScene.draw) activeScene.draw(display, msDuration);
+    if (activeScene.draw) activeScene.draw(displays, msDuration);
   }
 
   this.start = function(scene) {
@@ -90,11 +89,11 @@ exports.init = function() {
 var Game = exports.Game = function() {
   this.director = null;
   this.player = null;
-  this.display = null;
+  this.displays = null;
 
-  this.start = function(display){
-    this.display = display;
-    this.director = new Director(display);
+  this.start = function(displays){
+    this.displays = displays;
+    this.director = new Director(displays);
     this.game_scene = new scenes.GameScene(this);
     this.director.start(this.game_scene);
     //this.playLevel(levels.drycircuit, false, true);
