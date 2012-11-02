@@ -1,6 +1,6 @@
 var settings = exports.settings = {
   SCREEN_WIDTH: 1200,  //screen width in pixels
-  SCREEN_HEIGHT: 600, //screen height in pixels
+  SCREEN_HEIGHT: 550, //screen height in pixels
   FPS: 60,        //logic updates per second
   DEBUG: true,
 };

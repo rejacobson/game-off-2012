@@ -37,12 +37,13 @@ var Tree = exports.Tree = function() {
 
   this.add_lead({
     position: this.base.slice(0),
-    width: 15,
+    width: 25,
+    lifespan: 15,
     destination: [500, 450],
     trend: [0, -1],
     momentum: 3,
     sprouts: 6,
-    bounds: [null, null, null, 450]
+    bounds: [null, 50, null, 450]
   });
 };
 
@@ -69,7 +70,7 @@ var Lead = function(tree, settings) {
   var defaults = {
     generation: 0,
     lifespan: 15,
-    speed: 100,
+    speed: 150,
     step: 50,
     trend: null,
     momentum: 0,
