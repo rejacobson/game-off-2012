@@ -46,7 +46,7 @@ var Tree = exports.Tree = function(settings) {
     position: this.base.slice(0),
     width: 25,
     lifespan: 15,
-    destination: [500, 450],
+    direction: [0, -1],
     trend: [0, -1],
     momentum: 3,
     sprouts: 6,
@@ -97,7 +97,7 @@ var Lead = function(tree, settings) {
   }
   _.extend(this, defaults, settings);
 
-  this.heading(settings.destination);
+  this.heading(settings.direction);
 };
 
 Lead.prototype.in_bounds = function(position) {
@@ -124,57 +124,55 @@ Lead.prototype.grow = function() {
   var self = this;
   // Branching directions
   var branch_directions = [vectors.leftNormal(this.direction), vectors.rightNormal(this.direction)];
-  var dests = this.candidate_destinations();
+  var directions = this.candidate_directions();
+  var new_direction = this.direction;
 
-  if (this.momentum > 0) {
-    var new_destination = vectors.add(self.destination, vectors.multiply(this.direction, self.step));
-  } else {
+  if (this.momentum <= 0) {
     if (this.trend) {
-      var dirs_and_dots = [];
-      _.each(this.candidate_directions(), function(d, i) {
-        dirs_and_dots.push({dir: d, dest: dests[i], dot: vectors.dot(self.trend, d)});
+      var measured_directions = [];
+      _.each(directions, function(dir, i) {
+        measured_directions.push({dir: dir, dot: vectors.dot(self.trend, dir)});
       }); 
      
       // Sort by the dot product
-      dirs_and_dots.sort(function(a, b) {
-        return a.dot - b.dot;
-      });
+      measured_directions.sort(function(a, b) { return a.dot - b.dot; });
 
       // Remove the negative direction
-      if (dirs_and_dots[0].dot < 0) dirs_and_dots.splice(0, 1); 
+      if (measured_directions[0].dot < 0) measured_directions.splice(0, 1); 
 
       // Weight the destinations
-      dests = [];
-      _.each(dirs_and_dots, function(d) {
+      directions = [];
+      _.each(measured_directions, function(d) {
         var n = Math.floor(d.dot + 1) * 4;
         for (; n > 0; n--) {
-          dests.push(d.dest);
+          directions.push(d.dir);
         }
       });
 
-      dests = _.shuffle(dests);
+      directions = _.shuffle(directions);
     }
 
-    var new_destination = dests[roll(dests.length)];
+    var new_direction = directions[roll(directions.length)];
+    var new_destination = vectors.add(this.position, vectors.multiply(new_direction, this.step));
 
     if (!this.in_bounds(new_destination)) {
-      new_destination = vectors.add(self.destination, vectors.multiply(this.direction, self.step));
+      new_direction = this.direction;
     }
   }
 
   this.position = this.destination.slice(0);
-  this.heading(new_destination);
+  this.heading(new_direction);
 
   if (this.generation < 3 && this.width >= 2 && roll(100) < this.sprout_percentage()) {
     branch_directions = _.without(branch_directions, this.direction); //_.reject(branch_directions, function(d) { d == this.direction });
     var dir = branch_directions[roll(branch_directions.length)];
-    var dest = vectors.add(this.position, vectors.multiply(dir, self.step)); 
+    var dest = vectors.add(this.position, vectors.multiply(dir, this.step));
 
     if (this.in_bounds(dest)) {
       this.branch({
         position: this.position.slice(0),
         last_position: this.position.slice(0),
-        destination: dest,
+        direction: dir,
         trend: dir,
         lifespan: 8,
         momentum: 3,
@@ -186,9 +184,9 @@ Lead.prototype.grow = function() {
   }
 };
 
-Lead.prototype.heading = function(destination) {
-  this.destination = destination; // the destination of the line
-  this.direction = vectors.unit(vectors.subtract(this.destination, this.position)); // unit direction of the heading
+Lead.prototype.heading = function(direction) {
+  this.direction = direction;
+  this.destination = vectors.add(this.position, vectors.multiply(this.direction, this.step)); 
   this.velocity = vectors.multiply(this.direction, this.speed);
 };
 
