@@ -126,6 +126,7 @@ Lead.prototype.grow = function() {
   var branch_directions = [vectors.leftNormal(this.direction), vectors.rightNormal(this.direction)];
   var directions = this.candidate_directions();
   var new_direction = this.direction;
+  var turning = false;
 
   if (this.momentum <= 0) {
     if (this.trend) {
@@ -160,8 +161,14 @@ Lead.prototype.grow = function() {
     }
   }
 
+  if (new_direction != this.direction) turning = true; 
+
   this.position = this.destination.slice(0);
   this.heading(new_direction);
+
+  if (turning && this.tree.settings.onBranch) {
+    this.tree.settings.onBranch.call(this);
+  }
 
   if (this.generation < 3 && this.width >= 2 && roll(100) < this.sprout_percentage()) {
     branch_directions = _.without(branch_directions, this.direction); //_.reject(branch_directions, function(d) { d == this.direction });
@@ -221,6 +228,8 @@ Lead.prototype.update = function(msDuration) {
 
   this.last_position = this.position.slice(0);
   this.position = vectors.round(vectors.add(this.position, vectors.multiply(this.velocity, msDuration)));
+
+  if (this.tree.settings.onGrow) this.tree.settings.onGrow.call(this, msDuration);
 
   if (this.has_arrived()) {
     if (!this.in_bounds(this.position)) this.lifespan = 0;

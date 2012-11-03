@@ -13,30 +13,29 @@ var GameScene = exports.GameScene = function(game) {
   
   var trunk = new tree.Tree({
     // Called when a branch changes direction
-    onBend: function() {
-
-    },
-
-    // Called when a new branch is spawned
     onBranch: function() {
-console.log('New Branch!!!!');
-console.log(this);
+      if (this.direction[1] == 0 && !this.platform) {
+        this.platform = new terrain.Platform(this.position[0], this.position[0], this.position[1]); 
+        platforms.insert(this.platform);
+      } else {
+        this.platform = null;
+      }
     },
 
     // Called when a branch is updated
     onGrow: function(msDuration) {
-
+      if (!this.platform || this.direction[0] == 0) return;
+      
+      if (this.direction[0] > 0) {
+        this.platform.right = this.position[0];
+      } else {
+        this.platform.left = this.position[0];
+      } 
     }
   });
 
   this.entities.push(trunk);
   this.entities.push(platforms);
-
-  platforms.insert(new terrain.Platform(100, 300, 200));
-  platforms.insert(new terrain.Platform(200, 400, 300));
-  platforms.insert(new terrain.Platform(300, 350, 400));
-  platforms.insert(new terrain.Platform(180, 300, 250));
-
 
 
   /////////////////////////
