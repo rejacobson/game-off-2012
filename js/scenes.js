@@ -13,6 +13,7 @@ var GameScene = exports.GameScene = function(game) {
 
   var platforms = new terrain.PlatformManager();
   var ground = new terrain.Platform(0, 1200, 500);
+  ground.ground = true;
   platforms.insert(ground); 
 
 console.log(platforms);

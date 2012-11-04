@@ -61,6 +61,7 @@ var Platform = exports.Platform = function(left, right, top) {
   this.left = left;
   this.right = right;
   this.top = top;
+  this.ground = false;
 };
 
 Platform.prototype.draw = function(display) {

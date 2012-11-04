@@ -87,7 +87,7 @@ var Router = exports.Router = function() {
       
       _.each(controllers, function(c) {
         if (c.implements(key)) {
-          c.execute(key, msDuration);
+          c.execute(key, msDuration, states);
         }
       });
     }
@@ -98,7 +98,7 @@ var Router = exports.Router = function() {
 
       _.each(controllers, function(c) {
         if (c.implements(key)) {
-          c.execute(key, msDuration);
+          c.execute(key, msDuration, states);
         }
       });
     }
@@ -115,11 +115,11 @@ var Controller = exports.Controller = function(entity, actionMap, actions) {
     return !!actionMap[key];
   }
   
-  this.execute = function(key, msDuration) {
+  this.execute = function(key, msDuration, key_states) {
     _.each(actionMap[key], function(func) {
       func = func+'_action';
       if (actions[func]) {
-        actions[func].call(entity, msDuration);
+        actions[func].call(entity, msDuration, key_states);
       }
     });
   }

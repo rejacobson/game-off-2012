@@ -60,8 +60,13 @@ Creature.prototype.update = function(msDuration, terrain) {
   // Gravity
   this.velocity[Y] += 2000 * msDuration;
 
+  // Find a new platform to land on
+  if (!this.platform && this.velocity[Y] > 0) {
+    this.platform = terrain.closestPlatform(this.position); 
+  }
+
   // Don't fall through the ground
-  if (this.platform && this.position[Y] > this.platform.top ) {
+  if (this.platform && this.position[Y] >= this.platform.top ) {
     this.on_ground = true;
     this.position[Y] = this.platform.top;
     this.velocity[Y] = 0;
@@ -82,11 +87,6 @@ Creature.prototype.update = function(msDuration, terrain) {
       this.avatar.state('idle'); 
     }
 */
-  }
-
-  // Find a new platform to land on
-  if (!this.platform && this.velocity[Y] > 0) {
-    this.platform = terrain.closestPlatform(this.position); 
   }
 
   if (this.update_callback) {
@@ -150,14 +150,18 @@ exports.BasicActions = {
     }
   },
 
-  jump_action: function(msDuration){
-    if (this.on_ground) {
-console.log('Jump!!!');
-      this.platform = null;
-      this.on_ground = false;
-      this.velocity[Y] = -450;
-console.log(this.velocity);
-      //player.animation('jumping');
+  jump_action: function(msDuration, key_states){
+    if (this.on_ground && this.platform) {
+      if (key_states[event.K_s] == true && this.platform.ground == false) {
+        this.position[Y] += 1;
+        this.on_ground = false;
+        this.platform = null;
+      } else {
+        this.platform = null;
+        this.on_ground = false;
+        this.velocity[Y] = -450;
+        //player.animation('jumping');
+      }
     }
   },
   
