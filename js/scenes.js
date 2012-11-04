@@ -2,6 +2,8 @@ var gamejs = require('gamejs');
 var input = require('input');
 var tree = require('tree');
 var terrain = require('terrain');
+var entity = require('entity');
+var avatar = require('avatar');
 
 
 var GameScene = exports.GameScene = function(game) {
@@ -10,7 +12,8 @@ var GameScene = exports.GameScene = function(game) {
   this.entities = []; 
 
   var platforms = new terrain.PlatformManager();
-  platforms.insert(new terrain.Platform(0, 1200, 500)); 
+  var ground = new terrain.Platform(0, 1200, 500);
+  platforms.insert(ground); 
   
   var trunk = new tree.Tree({
     // Called when a branch changes direction
@@ -35,8 +38,23 @@ var GameScene = exports.GameScene = function(game) {
     }
   });
 
-  this.entities.push(trunk);
-  this.entities.push(platforms);
+  // Player
+  this.player = new entity.Creature('player', {
+    stats: {
+      speed: 100
+    },
+    avatar: new avatar.Image('images/player.png'),
+    position: [100, 500],
+    platform: ground,
+    update: function(msDuration) { }
+  });
+
+  this.entities.push(this.player);
+
+  this.player.controller = new input.Controller(this.player, entity.basic_action_map, entity.BasicActions);
+  this.input_router.register(this.player.controller);
+
+  this.handleEvent = this.input_router.handleEvent;
 
 
   /////////////////////////
@@ -48,20 +66,27 @@ var GameScene = exports.GameScene = function(game) {
     _.each(this.entities, function(e) {
       if (e.update) e.update(msDuration);
     });
+
+    trunk.update(msDuration);
   }
   
   /////////////////////////
   // Draw
   /////////////////////////
   this.draw = function(displays) {
+    trunk.draw(displays['background']);
+    platforms.draw(displays['background']);
+
     // Clear the canvas before drawing
-    //display.clear();
+    displays['foreground'].clear();
 
     _.each(this.entities, function(e) {
-      if (e.draw) e.draw(displays['background']);
+      if (e.draw) e.draw(displays['foreground']);
     });
   }
   
   this.destroy = function() {}
 };
 
+
+gamejs.preload(['images/player.png']);
