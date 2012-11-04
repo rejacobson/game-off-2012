@@ -14,6 +14,8 @@ var GameScene = exports.GameScene = function(game) {
   var platforms = new terrain.PlatformManager();
   var ground = new terrain.Platform(0, 1200, 500);
   platforms.insert(ground); 
+
+console.log(platforms);
   
   var trunk = new tree.Tree({
     // Called when a branch changes direction
@@ -64,7 +66,7 @@ var GameScene = exports.GameScene = function(game) {
     this.input_router.update(msDuration);
 
     _.each(this.entities, function(e) {
-      if (e.update) e.update(msDuration);
+      if (e.update) e.update(msDuration, platforms);
     });
 
     trunk.update(msDuration);

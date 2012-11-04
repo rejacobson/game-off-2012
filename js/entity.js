@@ -44,16 +44,24 @@ var Creature = exports.Creature = function(name, settings) {
   this.update_callback = settings.update || null;
 };
 
-Creature.prototype.update = function(msDuration) {
+Creature.prototype.update = function(msDuration, terrain) {
   if (this.avatar.update) this.avatar.update(msDuration);
 
   this.position = vectors.add(this.position, vectors.multiply(this.velocity, msDuration));
+
+  // Test the edges of the platform
+  if (this.platform) {
+    if (this.position[X] < this.platform.left || this.position[X] > this.platform.right) {
+      this.platform = null;
+      this.on_ground = false;
+    }
+  }
 
   // Gravity
   this.velocity[Y] += 2000 * msDuration;
 
   // Don't fall through the ground
-  if (this.position[Y] > this.platform.top ) {
+  if (this.platform && this.position[Y] > this.platform.top ) {
     this.on_ground = true;
     this.position[Y] = this.platform.top;
     this.velocity[Y] = 0;
@@ -76,6 +84,11 @@ Creature.prototype.update = function(msDuration) {
 */
   }
 
+  // Find a new platform to land on
+  if (!this.platform && this.velocity[Y] > 0) {
+    this.platform = terrain.closestPlatform(this.position); 
+  }
+
   if (this.update_callback) {
     this.update_callback.call(this, msDuration);
   }
@@ -83,6 +96,9 @@ Creature.prototype.update = function(msDuration) {
 
 Creature.prototype.draw = function(display) {
   if (this.avatar.draw) this.avatar.draw(display, this.position);
+  if (this.platform) {
+    gamejs.draw.line(display, '#00ff00', [this.platform.left, this.platform.top], [this.platform.right, this.platform.top], 2);
+  }
 }
 
 Creature.prototype.face = function(direction) {
@@ -137,6 +153,7 @@ exports.BasicActions = {
   jump_action: function(msDuration){
     if (this.on_ground) {
 console.log('Jump!!!');
+      this.platform = null;
       this.on_ground = false;
       this.velocity[Y] = -450;
 console.log(this.velocity);

@@ -26,21 +26,26 @@ PlatformManager.prototype.getBucketIndex = function(y) {
 };
 
 PlatformManager.prototype.platforms = function(bucket) {
-  return this.spatial_partision[bucket];
+  return this.spatial_partition[bucket] || [];
 };
 
 PlatformManager.prototype.closestPlatform = function(position) {
-  if (top > this.settings.height) return false;
+  if (position[1] > this.settings.height) return false;
 
-  var bucket = Math.floor(top/this.settings.bucket_size);
+  var bucket = Math.floor(position[1]/this.settings.bucket_size);
   
-  var platforms;
+  var platforms = this.platforms(bucket);
+  platforms = platforms.concat(this.platforms(bucket+1));
 
-  if (platforms = this.platforms(bucket)) {
+  if (platforms.length) {
+    var p;
     for (var i = 0; i<platforms.length; i++) {
-      if (platforms.top > top) return p;
+      p = platforms[i];
+      if (position[1] <= p.top && position[0] > p.left && position[0] < p.right) return p;
     }
   }
+  
+  return null;
 };
 
 PlatformManager.prototype.draw = function(display) {
