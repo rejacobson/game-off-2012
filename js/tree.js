@@ -1,35 +1,7 @@
 var gamejs = require('gamejs');
+var util = require('util');
 var vectors = gamejs.utils.vectors;
 
-function roll(max) {
-  return Math.floor(Math.random() * max);
-};
-
-vectors.len_sq = function(v) {
-  return v[0]*v[0] + v[1]*v[1];
-};
-
-vectors.distance_sq = function(a, b) {
-  vectors.len_sq(vectors.subtract(a, b)); 
-};
-
-vectors.leftNormal = function(v) {
-  return [v[1], -v[0]];
-};
-
-vectors.rightNormal = function(v) {
-  return [-v[1], v[0]];
-};
-
-vectors.toString = function(v) {
-  return v[0]+':'+v[1];
-};
-
-vectors.round = function(v) {
-  v[0] = Math.round(v[0]);
-  v[1] = Math.round(v[1]);
-  return v;
-};
 
 var Tree = exports.Tree = function(settings) {
   this.leads = [];
@@ -93,7 +65,7 @@ var Lead = function(tree, settings) {
     destination: [0, 0],
     
     width: 2,
-    color: '#000000'
+    color: '#521300'
   }
   _.extend(this, defaults, settings);
 
@@ -111,7 +83,7 @@ Lead.prototype.sprout_percentage = function() {
   return Math.round(this.sprouts / this.lifespan * 100);
 };
 
-Lead.prototype.branch = function(settings) {
+Lead.prototype.sprout = function(settings) {
   var forced_settings = {
     generation: this.generation + 1,
     width: Math.round(this.width / 2)
@@ -122,8 +94,9 @@ Lead.prototype.branch = function(settings) {
 
 Lead.prototype.grow = function() {
   var self = this;
-  // Branching directions
-  var branch_directions = [vectors.leftNormal(this.direction), vectors.rightNormal(this.direction)];
+
+  // Sprouting directions
+  var sprout_directions = [vectors.leftNormal(this.direction), vectors.rightNormal(this.direction)];
   var directions = this.candidate_directions();
   var new_direction = this.direction;
   var turning = false;
@@ -153,7 +126,7 @@ Lead.prototype.grow = function() {
       directions = _.shuffle(directions);
     }
 
-    var new_direction = directions[roll(directions.length)];
+    var new_direction = directions[util.roll(directions.length)];
     var new_destination = vectors.add(this.position, vectors.multiply(new_direction, this.step));
 
     if (!this.in_bounds(new_destination)) {
@@ -170,13 +143,13 @@ Lead.prototype.grow = function() {
     this.tree.settings.onBranch.call(this);
   }
 
-  if (this.generation < 3 && this.width >= 2 && roll(100) < this.sprout_percentage()) {
-    branch_directions = _.without(branch_directions, this.direction); //_.reject(branch_directions, function(d) { d == this.direction });
-    var dir = branch_directions[roll(branch_directions.length)];
+  if (this.generation < 3 && this.width >= 2 && util.roll(100) < this.sprout_percentage()) {
+    sprout_directions = _.without(sprout_directions, this.direction); //_.reject(sprout_directions, function(d) { d == this.direction });
+    var dir = sprout_directions[util.roll(sprout_directions.length)];
     var dest = vectors.add(this.position, vectors.multiply(dir, this.step));
 
     if (this.in_bounds(dest)) {
-      this.branch({
+      this.sprout({
         position: this.position.slice(0),
         last_position: this.position.slice(0),
         direction: dir,
@@ -195,18 +168,6 @@ Lead.prototype.heading = function(direction) {
   this.direction = direction;
   this.destination = vectors.add(this.position, vectors.multiply(this.direction, this.step)); 
   this.velocity = vectors.multiply(this.direction, this.speed);
-};
-
-Lead.prototype.candidate_destinations = function() {
-  var directions = this.candidate_directions();
-  var destinations = [];
-
-  var self = this;
-  _.each(directions, function(d) {
-    destinations.push( vectors.add(self.destination, vectors.multiply(d, self.step)) );
-  });
-
-  return destinations;
 };
 
 Lead.prototype.candidate_directions = function() {

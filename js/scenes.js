@@ -10,6 +10,7 @@ var GameScene = exports.GameScene = function(game) {
   this.entities = []; 
 
   var platforms = new terrain.PlatformManager();
+  platforms.insert(new terrain.Platform(0, 1200, 500)); 
   
   var trunk = new tree.Tree({
     // Called when a branch changes direction
