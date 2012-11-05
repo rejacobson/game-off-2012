@@ -62,7 +62,7 @@ Creature.prototype.update = function(msDuration, terrain) {
 
   // Find a new platform to land on
   if (!this.platform && this.velocity[Y] > 0) {
-    this.platform = terrain.closestPlatform(this.position); 
+    this.platform = terrain.findClosest(this.position); 
   }
 
   // Don't fall through the ground

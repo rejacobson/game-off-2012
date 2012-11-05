@@ -1,91 +1,69 @@
 var gamejs = require('gamejs');
+var spatialpartition = require('spatialpartition');
 
-var PlatformManager = exports.PlatformManager = function(settings) {
-  var defaults = {
-    height: 500,
-    buckets: 20
-  };
-  this.settings = _.extend(defaults, settings); 
-  this.settings.bucket_size = this.settings.height / this.settings.buckets;
-
-  this.spatial_partition = []; 
+var PlatformManager = exports.PlatformManager = function(height, buckets) {
+  spatialpartition.Grid.call(this, {
+    map_size: [1, height],
+    cells: [1, buckets]
+  });
 };
+PlatformManager.prototype = Object.create(spatialpartition.Grid.prototype);
 
 PlatformManager.prototype.insert = function(platform) {
-  var index = this.getBucketIndex(platform.top);
-  if (!this.spatial_partition[index]) this.spatial_partition[index] = [];
-  this.spatial_partition[index].push(platform);
-  if (this.spatial_partition[index].length > 1) {
-    this.spatial_partition[index].sort(function(a, b) { return a - b; });
+  var index = this.mapIndex([1, platform.top]),
+      platforms = this.mapFetch(index, []);
+      
+  platforms.push(platform);
+  
+  if (platforms.length > 1) {
+    platforms.sort(function(a, b) { a.top - b.top });
   }
+  
   return platform;
 };
 
-
-PlatformManager.prototype.mergeOverlapping = function(platform) {
-  var self = this;
-  var index = this.getBucketIndex(platform.top);
-  var platforms = this.platforms(index);
-
-  platforms = _.filter(_.without(platforms, platform), function(p) {
-    return p.top == platform.top && !(p.left >= platform.right+1 || p.right <= platform.left-1) 
-  });
-
-  if (platforms.length == 0) return;
-
-  _.each(platforms, function(p) {
-    platform.left = p.left = Math.min(p.left, platform.left);
-    platform.right = p.right = Math.max(p.right, platform.right);
-  });
-
-};
-
-PlatformManager.prototype.remove = function(platform) {
-  var self = this;
-  var index = this.getBucketIndex(platform.top);
-  var platforms = this.platforms(index);
-
-  _.each(platforms, function(p, i) {
-    if (p == platform) {
-      delete self.spatial_partition[index][i];
-    }
-  });
-};
-
-PlatformManager.prototype.getBucketIndex = function(y) {
-  return Math.floor(y / this.settings.bucket_size);
-};
-
-PlatformManager.prototype.platforms = function(bucket) {
-  return this.spatial_partition[bucket] || [];
-};
-
-PlatformManager.prototype.closestPlatform = function(position) {
-  if (position[1] > this.settings.height) return false;
-
-  var bucket = Math.floor(position[1]/this.settings.bucket_size);
+PlatformManager.prototype.findClosest = function(position) {
+  if (position[1] > this.settings.map_size[1]) return false;
   
-  var platforms = this.platforms(bucket);
-  platforms = platforms.concat(this.platforms(bucket+1));
-
+  var index = this.mapIndex([1, position[1]]);
+  var platforms = _.compact(this.mapFetch([index, index+1]));
+  
   if (platforms.length) {
-    var p;
-    for (var i = 0; i<platforms.length; i++) {
-      p = platforms[i];
-      if (position[1] <= p.top && position[0] > p.left && position[0] < p.right) return p;
+    for (var i=0; i<platforms.length; ++i) {
+       p = platforms[i];
+       if (position[1] <= p.top && position[0] > p.left && position[0] < p.right) return p;
     }
   }
   
   return null;
 };
 
+PlatformManager.prototype.mergeOverlapping = function(platform) {
+  var self = this,
+      index = this.mapIndex([1, platform.top]),
+      platforms = this.mapFetch(index);
+      
+  platforms = _.without(platforms, platform);
+  platforms = _.filter(platforms, function(p) {
+    return p.top == platform.top && !(p.left >= platform.right+3 || p.right <= platform.left-3);
+  });
+  
+  if (!platforms.length) return;
+  
+  _.each(platforms, function(p) {
+    platform.left = p.left = Math.min(p.left, platform.left);
+    platform.right = p.right = Math.max(p.right, platform.right);
+  });
+};
+
 PlatformManager.prototype.draw = function(display) {
-  _.each(this.spatial_partition, function(bucket) {
+  _.each(this.map, function(bucket) {
     _.each(bucket, function(platform) {
       platform.draw(display);
     });
   });
 };
+
 
 
 var Platform = exports.Platform = function(left, right, top, settings) {

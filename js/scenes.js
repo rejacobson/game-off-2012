@@ -11,7 +11,7 @@ var GameScene = exports.GameScene = function(game) {
   this.input_router = new input.Router();
   this.entities = []; 
 
-  var platforms = new terrain.PlatformManager();
+  var platforms = new terrain.PlatformManager(600, 20);
   var ground = new terrain.Platform(0, 1200, 500, {is_ground: true});
   platforms.insert(ground); 
 
