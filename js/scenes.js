@@ -12,19 +12,23 @@ var GameScene = exports.GameScene = function(game) {
   this.entities = []; 
 
   var platforms = new terrain.PlatformManager();
-  var ground = new terrain.Platform(0, 1200, 500);
-  ground.ground = true;
+  var ground = new terrain.Platform(0, 1200, 500, {is_ground: true});
   platforms.insert(ground); 
 
-console.log(platforms);
-  
   var trunk = new tree.Tree({
     // Called when a branch changes direction
     onBranch: function() {
-      if (this.direction[1] == 0 && !this.platform) {
+      // Branched left or right
+      if (this.direction[1] == 0) {
         this.platform = new terrain.Platform(this.position[0], this.position[0], this.position[1]); 
         platforms.insert(this.platform);
+
+      // Branched up or down
       } else {
+        if (this.platform) {
+          platforms.mergeOverlapping(this.platform);
+        }
+
         this.platform = null;
       }
     },
@@ -33,11 +37,14 @@ console.log(platforms);
     onGrow: function(msDuration) {
       if (!this.platform || this.direction[0] == 0) return;
       
+      // Growing right
       if (this.direction[0] > 0) {
-        this.platform.right = this.position[0];
+        if (this.platform.right < this.position[0]) this.platform.right = this.position[0];
+
+      // Growing left
       } else {
-        this.platform.left = this.position[0];
-      } 
+        if (this.platform.left > this.position[0]) this.platform.left = this.position[0];
+      }
     }
   });
 

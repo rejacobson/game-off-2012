@@ -21,6 +21,37 @@ PlatformManager.prototype.insert = function(platform) {
   return platform;
 };
 
+
+PlatformManager.prototype.mergeOverlapping = function(platform) {
+  var self = this;
+  var index = this.getBucketIndex(platform.top);
+  var platforms = this.platforms(index);
+
+  platforms = _.filter(_.without(platforms, platform), function(p) {
+    return p.top == platform.top && !(p.left >= platform.right+1 || p.right <= platform.left-1) 
+  });
+
+  if (platforms.length == 0) return;
+
+  _.each(platforms, function(p) {
+    platform.left = p.left = Math.min(p.left, platform.left);
+    platform.right = p.right = Math.max(p.right, platform.right);
+  });
+
+};
+
+PlatformManager.prototype.remove = function(platform) {
+  var self = this;
+  var index = this.getBucketIndex(platform.top);
+  var platforms = this.platforms(index);
+
+  _.each(platforms, function(p, i) {
+    if (p == platform) {
+      delete self.spatial_partition[index][i];
+    }
+  });
+};
+
 PlatformManager.prototype.getBucketIndex = function(y) {
   return Math.floor(y / this.settings.bucket_size);
 };
@@ -57,11 +88,20 @@ PlatformManager.prototype.draw = function(display) {
 };
 
 
-var Platform = exports.Platform = function(left, right, top) {
+var Platform = exports.Platform = function(left, right, top, settings) {
   this.left = left;
   this.right = right;
   this.top = top;
-  this.ground = false;
+
+  var defaults = {
+    is_ground: false
+  };
+
+  this.settings = _.extend(defaults, settings);
+};
+
+Platform.prototype.width = function() {
+  return this.right - this.left;
 };
 
 Platform.prototype.draw = function(display) {

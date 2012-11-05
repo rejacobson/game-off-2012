@@ -130,6 +130,11 @@ exports.BasicActions = {
   },
   
   move_down_action: function(msDuration){
+    if (this.on_ground && this.platform && this.platform.settings.is_ground == false) {
+      this.position[Y] += 1;
+      this.on_ground = false;
+      this.platform = null;
+    }
   },
   
   move_left_action: function(msDuration){
@@ -152,16 +157,10 @@ exports.BasicActions = {
 
   jump_action: function(msDuration, key_states){
     if (this.on_ground && this.platform) {
-      if (key_states[event.K_s] == true && this.platform.ground == false) {
-        this.position[Y] += 1;
-        this.on_ground = false;
-        this.platform = null;
-      } else {
-        this.platform = null;
-        this.on_ground = false;
-        this.velocity[Y] = -450;
-        //player.animation('jumping');
-      }
+      this.platform = null;
+      this.on_ground = false;
+      this.velocity[Y] = -450;
+      //player.animation('jumping');
     }
   },
   
