@@ -13,12 +13,11 @@ var avatar = require('avatar');
 var GameScene = exports.GameScene = function(game) {
   this.game = game;
   this.input_router = new input.Router();
-  this.entities = []; 
 
   var world = {
     platforms: new platforms.PlatformManager(600, 20),
     poles: new poles.PoleManager(1200, 20),
-    entities: new entities.EntityManager(1200, 600)
+    entities: new entities.EntityManager([1200, 600], [24, 12])
   }
 
   var ground = new platforms.Platform(0, 1200, 500, {is_ground: true});
@@ -94,7 +93,7 @@ var GameScene = exports.GameScene = function(game) {
     update: function(msDuration) { }
   });
 
-  this.entities.push(this.player);
+  world.entities.insert(this.player);
 
   this.player.controller = new input.Controller(this.player, entity.basic_action_map, entity.BasicActions);
   this.input_router.register(this.player.controller);
@@ -107,11 +106,7 @@ var GameScene = exports.GameScene = function(game) {
   /////////////////////////
   this.update = function(msDuration) {
     this.input_router.update(msDuration);
-
-    _.each(this.entities, function(e) {
-      if (e.update) e.update(msDuration, world.platforms);
-    });
-
+    world.entities.update(msDuration);
     trunk.update(msDuration);
   }
   
@@ -126,9 +121,7 @@ var GameScene = exports.GameScene = function(game) {
     // Clear the canvas before drawing
     displays['foreground'].clear();
 
-    _.each(this.entities, function(e) {
-      if (e.draw) e.draw(displays['foreground']);
-    });
+    world.entities.draw(displays['foreground']);
   }
   
   this.destroy = function() {}
