@@ -128,7 +128,7 @@ PoleManager.prototype.findClosest = function(rect) {
       p = poles[i];
       if (rect.left < p.left &&
           rect.right > p.left && 
-          rect.bottom > p.top  &&
+          rect.bottom > p.top + 2  &&
           rect.top < p.bottom) {
         return p;
       }
