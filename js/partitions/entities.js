@@ -15,8 +15,9 @@ var EntityManager = exports.EntityManager = function(map_size, cells) {
 EntityManager.prototype = Object.create(spatialpartition.Grid.prototype);
 
 EntityManager.prototype.insert = function(entity) {
+  var index = this.mapIndex(entity.position);
   this.entities.push(entity);
-  this.reindex(entity);
+  this.reindex(index, entity);
   entity._map_index = this.entities.length - 1;
 };
 
@@ -34,30 +35,29 @@ EntityManager.prototype.remove = function(entity) {
   }
 };
 
-EntityManager.prototype.reindex = function(entity) {
-  var index = this.mapIndex(entity.position),
-      cell = this.mapFetch(index, []);
-
-  if (entity.cellIndex && entity.cellIndex != index) {
-    var old_cell = this.mapFetch(entity.cellIndex);
+EntityManager.prototype.reindex = function(index, entity) {
+  if (index == entity._cell_index) return;
+  
+  if (entity._cell_index) {
+    var old_cell = this.mapFetch(entity._cell_index);
     for (var i=0; i<old_cell.length; ++i) {
       if (old_cell[i] == entity) {
         old_cell.splice(i, 1);
         break; 
       }
     }
-  } 
+  }
 
   entity._cell_index = index;
-  cell.push(entity); 
+  this.mapFetch(index, []).push(entity); 
 };
 
-
-var e;
+var e, new_index, cell;
 
 EntityManager.prototype.update = function(msDuration) {
   for (var i=0, len = this.entities.length; i<len; ++i) {
     e = this.entities[i]; 
+    if (e._cell_index != (new_index = this.mapIndex(e.position))) this.reindex(new_index, e);
     if (e.update) e.update(msDuration);
   }
 };
@@ -65,6 +65,6 @@ EntityManager.prototype.update = function(msDuration) {
 EntityManager.prototype.draw = function(display) {
   for (var i=0, len = this.entities.length; i<len; ++i) {
     e = this.entities[i]; 
-    if (e.draw) e.draw(display);
+    if (e.draw) e.draw(display); 
   }
 };

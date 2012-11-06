@@ -40,3 +40,12 @@ Grid.prototype.mapIndex = function(position) {
 
   return index;
 };
+
+Grid.prototype.mapCoordinates = function(index) {
+  return [Math.floor(index / this.cells[1]), Math.floor(index / this.cells[0])];
+};
+
+Grid.prototype.mapPosition = function(index) {
+  var coords = this.mapCoordinates(index);
+  return [coords[0] * cell_size[0], coords[1] * cell_size[1]];
+};
