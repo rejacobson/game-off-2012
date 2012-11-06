@@ -11,51 +11,81 @@ var GameScene = exports.GameScene = function(game) {
   this.input_router = new input.Router();
   this.entities = []; 
 
-  var platforms = new terrain.PlatformManager(600, 20);
+  var world = {
+    platforms: new terrain.PlatformManager(600, 20),
+    poles: new terrain.PoleManager(1200, 20)
+  }
+
   var ground = new terrain.Platform(0, 1200, 500, {is_ground: true});
-  platforms.insert(ground); 
+  world.platforms.insert(ground); 
 
   var trunk = new tree.Tree({
+
     // Called when a branch changes direction
     onBranch: function() {
+
       // Branched left or right
       if (this.direction[1] == 0) {
         this.platform = new terrain.Platform(this.position[0], this.position[0], this.position[1]); 
-        platforms.insert(this.platform);
+        world.platforms.insert(this.platform);
+
+        if (this.pole) {
+          world.poles.mergeOverlapping(this.pole);
+          this.pole = null;
+        }
+
 
       // Branched up or down
       } else {
-        if (this.platform) {
-          platforms.mergeOverlapping(this.platform);
-        }
+        this.pole = new terrain.Pole(this.position[1], this.position[1], this.position[0]); 
+        world.poles.insert(this.pole);
 
-        this.platform = null;
+        if (this.platform) {
+          world.platforms.mergeOverlapping(this.platform);
+          this.platform = null;
+        }
       }
     },
 
     // Called when a branch is updated
     onGrow: function(msDuration) {
-      if (!this.platform || this.direction[0] == 0) return;
-      
-      // Growing right
-      if (this.direction[0] > 0) {
-        if (this.platform.right < this.position[0]) this.platform.right = this.position[0];
 
-      // Growing left
-      } else {
-        if (this.platform.left > this.position[0]) this.platform.left = this.position[0];
+      // Platform growth 
+      if (this.platform && this.direction[1] == 0) {
+        // Growing right
+        if (this.direction[0] > 0) {
+          if (this.platform.right < this.position[0]) this.platform.right = this.position[0];
+
+        // Growing left
+        } else {
+          if (this.platform.left > this.position[0]) this.platform.left = this.position[0];
+        }
       }
+
+      // Pole growth
+      if (this.pole && this.direction[0] == 0) {
+        // Growing right
+        if (this.direction[1] > 0) {
+          if (this.pole.bottom < this.position[1]) this.pole.bottom = this.position[1];
+
+        // Growing left
+        } else {
+          if (this.pole.top > this.position[1]) this.pole.top = this.position[1];
+        }
+      }
+      
     }
   });
 
   // Player
-  this.player = new entity.Creature('player', {
+  this.player = new entity.Creature(world, 'player', {
     stats: {
       speed: 100
     },
     avatar: new avatar.Image('images/player.png'),
     position: [100, 500],
     platform: ground,
+    pole: null,
     update: function(msDuration) { }
   });
 
@@ -74,7 +104,7 @@ var GameScene = exports.GameScene = function(game) {
     this.input_router.update(msDuration);
 
     _.each(this.entities, function(e) {
-      if (e.update) e.update(msDuration, platforms);
+      if (e.update) e.update(msDuration, world.platforms);
     });
 
     trunk.update(msDuration);
@@ -85,7 +115,8 @@ var GameScene = exports.GameScene = function(game) {
   /////////////////////////
   this.draw = function(displays) {
     trunk.draw(displays['background']);
-    platforms.draw(displays['background']);
+    world.platforms.draw(displays['background']);
+    world.poles.draw(displays['background']);
 
     // Clear the canvas before drawing
     displays['foreground'].clear();
