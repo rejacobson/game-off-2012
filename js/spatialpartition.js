@@ -42,10 +42,12 @@ Grid.prototype.mapIndex = function(position) {
 };
 
 Grid.prototype.mapCoordinates = function(index) {
-  return [Math.floor(index / this.cells[1]), Math.floor(index / this.cells[0])];
+  var y = Math.floor(index / this.settings.cells[0]),
+      x = Math.ceil(index / y) - this.settings.cells[0];
+  return [x, y];
 };
 
 Grid.prototype.mapPosition = function(index) {
   var coords = this.mapCoordinates(index);
-  return [coords[0] * cell_size[0], coords[1] * cell_size[1]];
+  return [coords[0] * this.settings.cell_size[0], coords[1] * this.settings.cell_size[1]];
 };

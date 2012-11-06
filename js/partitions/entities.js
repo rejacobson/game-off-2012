@@ -52,7 +52,7 @@ EntityManager.prototype.reindex = function(index, entity) {
   this.mapFetch(index, []).push(entity); 
 };
 
-var e, new_index, cell;
+var e, new_index, rect = new gamejs.Rect([0, 0], [0, 0]);
 
 EntityManager.prototype.update = function(msDuration) {
   for (var i=0, len = this.entities.length; i<len; ++i) {
@@ -66,5 +66,10 @@ EntityManager.prototype.draw = function(display) {
   for (var i=0, len = this.entities.length; i<len; ++i) {
     e = this.entities[i]; 
     if (e.draw) e.draw(display); 
+
+    rect.width = this.settings.cell_size[0];
+    rect.height = this.settings.cell_size[1];
+    rect.topleft = this.mapPosition(e._cell_index);
+    gamejs.draw.rect(display, '#00ffff', rect, 1);
   }
 };
