@@ -1,7 +1,11 @@
 var gamejs = require('gamejs');
 var input = require('input');
 var tree = require('tree');
-var terrain = require('terrain');
+
+var platforms = require('partitions/platforms');
+var poles = require('partitions/poles');
+var entities = require('partitions/entities');
+
 var entity = require('entity');
 var avatar = require('avatar');
 
@@ -12,11 +16,12 @@ var GameScene = exports.GameScene = function(game) {
   this.entities = []; 
 
   var world = {
-    platforms: new terrain.PlatformManager(600, 20),
-    poles: new terrain.PoleManager(1200, 20)
+    platforms: new platforms.PlatformManager(600, 20),
+    poles: new poles.PoleManager(1200, 20),
+    entities: new entities.EntityManager(1200, 600)
   }
 
-  var ground = new terrain.Platform(0, 1200, 500, {is_ground: true});
+  var ground = new platforms.Platform(0, 1200, 500, {is_ground: true});
   world.platforms.insert(ground); 
 
   var trunk = new tree.Tree({
@@ -26,7 +31,7 @@ var GameScene = exports.GameScene = function(game) {
 
       // Branched left or right
       if (this.direction[1] == 0) {
-        this.platform = new terrain.Platform(this.position[0], this.position[0], this.position[1]); 
+        this.platform = new platforms.Platform(this.position[0], this.position[0], this.position[1]); 
         world.platforms.insert(this.platform);
 
         if (this.pole) {
@@ -37,7 +42,7 @@ var GameScene = exports.GameScene = function(game) {
 
       // Branched up or down
       } else {
-        this.pole = new terrain.Pole(this.position[1], this.position[1], this.position[0]); 
+        this.pole = new poles.Pole(this.position[1], this.position[1], this.position[0]); 
         world.poles.insert(this.pole);
 
         if (this.platform) {
