@@ -2,19 +2,6 @@ var gamejs = require('gamejs');
 var vectors = gamejs.utils.vectors;
 var spritesheet = require('spritesheet');
 
-
-var Image = exports.Image = function(img) {
-  this.image = gamejs.image.load(img);
-  this.rect = new gamejs.Rect([0, 0], this.image.getSize());
-  this.offset = [-this.rect.width/2, -this.rect.height];
-};
-Image.prototype.draw = function(display, position) {
-  this.rect.topleft = vectors.add(position, this.offset);
-  display.blit(this.image, this.rect);
-};
-Image.prototype.state = function(name) { return name || null; };
-
-
 var Animation = exports.Animation = function(spriteSheet, animationSpec, fps) {
   this.fps = fps || 6;
   this.frameDuration = 1000 / this.fps;
@@ -94,12 +81,12 @@ Animation.factory = function(spec) {
   return animation;
 };
 
-var animations = exports.animations = {
-/*
+
+var specs = exports.specs = {
   player: {
     spritesheet: {
-      image: 'animations/player.png',
-      framesize: [96, 48]
+      image: 'images/mob/player.png',
+      framesize: [48, 24]
     },
     cycles: {
       idle: [0, 6],
@@ -107,11 +94,10 @@ var animations = exports.animations = {
     },
     fps: 16 
   }
-*/
 };
 
 var preload_list = [];
-_.each(animations, function(e) {
+_.each(specs, function(e) {
   preload_list.push(e.spritesheet.image);
 });
 gamejs.preload(preload_list);

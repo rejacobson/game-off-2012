@@ -7,7 +7,9 @@ var poles = require('partitions/poles');
 var entities = require('partitions/entities');
 
 var entity = require('entity');
-var avatar = require('avatar');
+var animation = require('animation');
+
+var player = require('mob/player');
 
 
 var GameScene = exports.GameScene = function(game) {
@@ -86,16 +88,14 @@ var GameScene = exports.GameScene = function(game) {
     stats: {
       speed: 100
     },
-    avatar: new avatar.Image('images/player.png'),
-    position: [100, 500],
-    platform: ground,
-    pole: null,
+    animation: animation.Animation.factory(animation.specs.player),
+    position: [100, 450],
     update: function(msDuration) { }
   });
 
   world.entities.insert(this.player);
 
-  this.player.controller = new input.Controller(this.player, entity.basic_action_map, entity.BasicActions);
+  this.player.controller = new input.Controller(this.player, player.ActionMap, player.Actions);
   this.input_router.register(this.player.controller);
 
   this.handleEvent = this.input_router.handleEvent;
