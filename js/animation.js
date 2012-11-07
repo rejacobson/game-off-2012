@@ -81,23 +81,3 @@ Animation.factory = function(spec) {
   return animation;
 };
 
-
-var specs = exports.specs = {
-  player: {
-    spritesheet: {
-      image: 'images/mob/player.png',
-      framesize: [48, 24]
-    },
-    cycles: {
-      idle: [0, 6],
-      walk: [7, 11]
-    },
-    fps: 16 
-  }
-};
-
-var preload_list = [];
-_.each(specs, function(e) {
-  preload_list.push(e.spritesheet.image);
-});
-gamejs.preload(preload_list);

@@ -27,8 +27,8 @@ var Stats = exports.Stats = function(stats) {
 //////////////////////////////////////////////////////////
 // Creature
 //////////////////////////////////////////////////////////
-var Creature = exports.Creature = function(world, name, settings) {
-  Stats.call(this, settings['stats']);
+var Creature = exports.Creature = function(world, name, stats, settings) {
+  Stats.call(this, stats);
 
   this.world = world;
  

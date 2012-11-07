@@ -6,13 +6,10 @@ var platforms = require('partitions/platforms');
 var poles = require('partitions/poles');
 var entities = require('partitions/entities');
 
-var entity = require('entity');
-var animation = require('animation');
-
-var hero = require('mob/hero');
-var toothface = require('mob/toothface');
+var mob = require('mob');
 
 var GameScene = exports.GameScene = function(game) {
+console.log(mob);
   this.game = game;
   this.input_router = new input.Router();
 
@@ -84,14 +81,14 @@ var GameScene = exports.GameScene = function(game) {
   });
 
   // Player
-  var player = hero.create(world);
-  player.controller = new input.Controller(player, hero.ActionMap, hero.Actions); 
+  var player = mob.factory(world, 'hero');
+  player.controller = new input.Controller(player, mob.roster['hero'].keys, mob.roster['hero'].actions); 
   this.input_router.register(player.controller);
   this.handleEvent = this.input_router.handleEvent;
 
   world.entities.insert(player);
 
-  world.entities.insert( toothface.create(world) );
+  world.entities.insert( mob.factory(world, 'toothface') );
   
 
   /////////////////////////

@@ -1,20 +1,19 @@
 var gamejs = require('gamejs');
 var event = gamejs.event;
 var entity = require('entity');
-var animation = require('animation');
 
-exports.create = function(world) {
-  return new entity.Creature(world, 'Hero', {
-    stats: {
-      speed: 100
-    },
-    animation: animation.Animation.factory(animation_specs),
-    position: [100, 450],
-    update: function(msDuration) { }
-  });
+gamejs.preload(['images/mob/hero.png']);
+
+exports.stats = {
+  speed: 100
 };
 
-var animation_specs = exports.animation_specs = {
+exports.settings = {
+  position: [100, 450],
+  update: function(msDuration) { }
+};
+
+exports.animation =  {
   spritesheet: {
     image: 'images/mob/hero.png',
     framesize: [48, 24]
@@ -26,8 +25,6 @@ var animation_specs = exports.animation_specs = {
   fps: 16 
 };
 
-gamejs.preload(['images/mob/hero.png']);
-
 
 var action_map = {};
 action_map[event.K_w+'_hold'] = ['move_up'];
@@ -38,9 +35,9 @@ action_map[event.K_a+'_dbl_hold'] = ['run', 'move_left'];
 action_map[event.K_d+'_dbl_hold'] = ['run', 'move_right'];
 action_map[event.K_SPACE] = ['jump'];
 
-exports.ActionMap = action_map;
+exports.keys = action_map;
 
-exports.Actions = {
+exports.actions = {
   walk_action: function(msDuration) {
     this.stats.speed = this.base_stats.speed;
     this.animation.state('walk');
