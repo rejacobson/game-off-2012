@@ -43,7 +43,7 @@ Grid.prototype.mapIndex = function(position) {
 
 Grid.prototype.mapCoordinates = function(index) {
   var y = Math.floor(index / this.settings.cells[0]),
-      x = Math.ceil(index / y) - this.settings.cells[0];
+      x = index - (y * this.settings.cells[0]);
   return [x, y];
 };
 

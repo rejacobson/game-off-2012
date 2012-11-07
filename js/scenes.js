@@ -17,7 +17,7 @@ var GameScene = exports.GameScene = function(game) {
   var world = {
     platforms: new platforms.PlatformManager(600, 20),
     poles: new poles.PoleManager(1200, 20),
-    entities: new entities.EntityManager([1200, 600], [24, 12])
+    entities: new entities.EntityManager([1200, 600], [16, 8])
   }
 
   var ground = new platforms.Platform(0, 1200, 500, {is_ground: true});
