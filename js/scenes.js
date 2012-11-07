@@ -9,8 +9,8 @@ var entities = require('partitions/entities');
 var entity = require('entity');
 var animation = require('animation');
 
-var player = require('mob/player');
-
+var hero = require('mob/hero');
+var toothface = require('mob/toothface');
 
 var GameScene = exports.GameScene = function(game) {
   this.game = game;
@@ -84,22 +84,15 @@ var GameScene = exports.GameScene = function(game) {
   });
 
   // Player
-  this.player = new entity.Creature(world, 'player', {
-    stats: {
-      speed: 100
-    },
-    animation: animation.Animation.factory(animation.specs.player),
-    position: [100, 450],
-    update: function(msDuration) { }
-  });
-
-  world.entities.insert(this.player);
-
-  this.player.controller = new input.Controller(this.player, player.ActionMap, player.Actions);
-  this.input_router.register(this.player.controller);
-
+  var player = hero.create(world);
+  player.controller = new input.Controller(player, hero.ActionMap, hero.Actions); 
+  this.input_router.register(player.controller);
   this.handleEvent = this.input_router.handleEvent;
 
+  world.entities.insert(player);
+
+  world.entities.insert( toothface.create(world) );
+  
 
   /////////////////////////
   // Update
@@ -127,5 +120,3 @@ var GameScene = exports.GameScene = function(game) {
   this.destroy = function() {}
 };
 
-
-gamejs.preload(['images/player.png']);
