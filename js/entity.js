@@ -46,7 +46,10 @@ var Creature = exports.Creature = function(world, name, stats, settings) {
   this.animation = settings.animation;
   this.hitbox = new gamejs.Rect([0, 0], [12, 20]);
 
+  this.controller = settings.controller || null;
   this.update_callback = settings.update || null;
+
+  this.actions = {};
 };
 
 Creature.prototype.update = function(msDuration) {
