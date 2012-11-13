@@ -32,6 +32,16 @@ exports.factory = function(world, name, _stats, _settings) {
 
 
 var Actions = {
+  'turn': function(direction) {
+    if (!direction) {
+      this.face(this.facing * -1);
+    } else {
+      this.face(direction);   
+    }
+    
+    return true;
+  },
+
   'is_far_from_edge': function() {
     return !this.actions.is_near_edge();
   },

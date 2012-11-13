@@ -29,26 +29,51 @@ exports.animation =  {
 var action_map = {};
 action_map[event.K_w+'_hold'] = ['move_up'];
 action_map[event.K_s+'_hold'] = ['move_down'];
-action_map[event.K_a+'_hold'] = ['walk', 'move_left'];
-action_map[event.K_d+'_hold'] = ['walk', 'move_right'];
-action_map[event.K_a+'_dbl_hold'] = ['run', 'move_left'];
-action_map[event.K_d+'_dbl_hold'] = ['run', 'move_right'];
+action_map[event.K_a+'_hold'] = ['turn -1', 'walk', 'move'];
+action_map[event.K_d+'_hold'] = ['turn 1', 'walk', 'move'];
+action_map[event.K_a+'_dbl_hold'] = ['turn -1', 'run', 'move'];
+action_map[event.K_d+'_dbl_hold'] = ['turn 1', 'run', 'move'];
 action_map[event.K_SPACE] = ['jump'];
 
 exports.keys = action_map;
 
 exports.actions = {
-  walk_action: function(msDuration) {
-    this.stats.speed = this.base_stats.speed;
-    this.animation.state('walk');
+  turn: function(msDuration, direction) {
+    if (!direction) {
+      this.face(this.facing * -1);
+    } else {
+      this.face(direction);   
+    }
+    
+    return true;
   },
 
-  run_action: function(msDuration) {
-    this.stats.speed = this.base_stats.speed * 3;
-    this.animation.state('walk');
-  },
+  walk: function(msDuration) {
+    if (this.on_ground) {
+      this.animation.state('walk');
+      this.stats.speed = this.base_stats.speed;
+    }
+  }, 
 
-  move_up_action: function(msDuration){
+  run: function(msDuration) {
+    if (this.on_ground) {
+      this.animation.state('walk');
+      this.stats.speed = this.base_stats.speed * 3;
+    }
+
+  }, 
+
+  move: function(msDuration) {
+    if (this.pole) this.position[0] += 50 * msDuration * this.facing;
+
+    if (this.on_ground) {
+      this.velocity[entity.X] = this.stats.speed * this.facing;
+    } else {
+      this.position[entity.X] += 1 * this.facing;
+    }
+  }, 
+
+  move_up: function(msDuration){
     if (this.pole) {
       this.position[1] -= 75 * msDuration;
     } else {    
@@ -61,7 +86,7 @@ exports.actions = {
     }
   },
   
-  move_down_action: function(msDuration){
+  move_down: function(msDuration){
     if (this.pole) {
       this.position[1] += 90 * msDuration;
     } else if (this.on_ground && this.platform && this.platform.settings.is_ground == false) {
@@ -70,28 +95,8 @@ exports.actions = {
       this.platform = null;
     }
   },
-  
-  move_left_action: function(msDuration){
-    if (this.pole) this.position[0] -= 50 * msDuration;
-    if (!this.on_ground) return this.face(entity.LEFT);
 
-    if (this.velocity[entity.X] <= 0) {
-      this.face(entity.LEFT);
-      this.velocity[entity.X] = -this.stats.speed;
-    }
-  },
-  
-  move_right_action: function(msDuration){
-    if (this.pole) this.position[0] += 50 * msDuration;
-    if (!this.on_ground) return this.face(entity.RIGHT);
-
-    if (this.velocity[entity.X] >= 0) {
-      this.face(entity.RIGHT);
-      this.velocity[entity.X] = this.stats.speed;
-    }
-  },
-
-  jump_action: function(msDuration, key_states){
+  jump: function(msDuration){
     if (this.pole) {
       this.pole = null;
       this.velocity = [250 * this.facing, -200];
@@ -105,7 +110,7 @@ exports.actions = {
     }
   },
   
-  idle_action: function(msDuration) {
+  idle: function(msDuration) {
     //player.animation('idle');
   }
 }

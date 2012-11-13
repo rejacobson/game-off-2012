@@ -67,9 +67,11 @@ EntityManager.prototype.draw = function(display) {
     e = this.entities[i]; 
     if (e.draw) e.draw(display); 
 
+/*
     rect.width = this.settings.cell_size[0];
     rect.height = this.settings.cell_size[1];
     rect.topleft = this.mapPosition(e._cell_index);
     gamejs.draw.rect(display, '#00ffff', rect, 1);
+*/
   }
 };

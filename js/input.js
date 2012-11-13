@@ -117,9 +117,13 @@ var Controller = exports.Controller = function(entity, actionMap, actions) {
   
   this.execute = function(key, msDuration, key_states) {
     _.each(actionMap[key], function(func) {
-      func = func+'_action';
+      var args = func.split(' '), 
+          func = args.shift();
+          
+      args.unshift(msDuration);
+
       if (actions[func]) {
-        actions[func].call(entity, msDuration, key_states);
+        actions[func].apply(entity, args);
       }
     });
   }

@@ -125,6 +125,6 @@ Creature.prototype.draw = function(display) {
 }
 
 Creature.prototype.face = function(direction) {
-  this.facing = direction;
+  this.facing = parseInt(direction);
 }
 
