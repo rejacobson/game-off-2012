@@ -30,6 +30,8 @@ Animation.prototype.state = function(cycle) {
 };
 
 Animation.prototype.start = function(cycle) {
+  if (!this.spec[cycle]) return false;
+
   this.currentCycle = cycle;
   this.currentFrame = this.spec[cycle][0];
   this.currentFrameDuration = 0;

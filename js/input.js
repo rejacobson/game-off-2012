@@ -106,10 +106,12 @@ var Router = exports.Router = function() {
 
 };
 
-var Controller = exports.Controller = function(entity, actionMap, actions) {
+var Controller = exports.Controller = function(entity, actionMap) {
+  if (!entity.actions) throw new Error('input.Controller -- Entity does not have any actions');
+
   var entity = entity;
   var actionMap = actionMap;
-  var actions = actions;
+  var actions = entity.actions;
   
   this.implements = function(key) {
     return !!actionMap[key];

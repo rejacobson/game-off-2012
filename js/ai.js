@@ -1,5 +1,5 @@
-var FAILED = exports.FAILED = 0;
-var SUCCESS = exports.SUCCESS = 1;
+var FAILED = exports.FAILED = false;
+var SUCCESS = exports.SUCCESS = true;
 var RUNNING = exports.RUNNING = 2;
 
 var BehaviourTree = exports.BehaviourTree = function(specs, context) {
@@ -15,9 +15,17 @@ var BehaviourTree = exports.BehaviourTree = function(specs, context) {
   });
 };
 
+BehaviourTree.prototype.reset = function() {
+  for (var i=0, len = this.behaviours.length; i<len; ++i) {
+    this.behaviours[i].reset();
+  };
+};
+
 BehaviourTree.prototype.update = function(msDuration) {
   var result;
   
+  // Run each bevaviour until one returns SUCCESS or RUNNING
+  // ie. Run the next behaviour if the current one has FAILED 
   for (var i=0, len = this.behaviours.length; i<len; ++i) {
     result = this.behaviours[i].update(msDuration);
     if (result != FAILED) break;
@@ -33,9 +41,15 @@ var Behaviour = function(actions, context) {
   this.running = 0;
 };
 
+Behaviour.prototype.reset = function() {
+  this.running = 0;
+};
+
 Behaviour.prototype.update = function(msDuration) {
   var result;
   
+  // Run each action until one returns FAILED or RUNNING
+  // SUCCESS'ful actions run the next one in line
   for (var i = this.running, len = this.actions.length; i<len; ++i) {
     result = this.perform(this.actions[i]);
 

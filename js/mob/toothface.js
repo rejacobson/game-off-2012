@@ -1,4 +1,5 @@
 var gamejs = require('gamejs');
+var actions = require('actions');
 
 gamejs.preload(['images/mob/toothface.png']);
 
@@ -22,8 +23,13 @@ exports.animation =  {
   fps: 16 
 };
 
+exports.actions = actions.Actions;
+ 
 exports.behaviour = {
-  'walk': ['is_far_from_edge', 'walk']
+  'patrol': {
+    'test edge': ['is_near_edge', 'turn'],
+    'walk': ['walk', 'move']
+  }
 
   //'attack': ['has_target', 'is_target_in_attack_range', 'attack'],
   //'seek target': ['seek_target'],
@@ -33,4 +39,4 @@ exports.behaviour = {
     'turn': ['is_near_edge', 'turn'],
     'walk': ['move']
   }*/
-}
+};

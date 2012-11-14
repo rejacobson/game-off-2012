@@ -1,43 +1,6 @@
-var gamejs = require('gamejs');
-var event = gamejs.event;
 var entity = require('entity');
 
-gamejs.preload(['images/mob/hero.png']);
-
-exports.stats = {
-  speed: 100
-};
-
-exports.settings = {
-  position: [100, 450],
-  update: function(msDuration) { }
-};
-
-exports.animation =  {
-  spritesheet: {
-    image: 'images/mob/hero.png',
-    framesize: [48, 24]
-  },
-  cycles: {
-    idle: [0, 6],
-    walk: [7, 11]
-  },
-  fps: 16 
-};
-
-
-var action_map = {};
-action_map[event.K_w+'_hold'] = ['move_up'];
-action_map[event.K_s+'_hold'] = ['move_down'];
-action_map[event.K_a+'_hold'] = ['turn -1', 'walk', 'move'];
-action_map[event.K_d+'_hold'] = ['turn 1', 'walk', 'move'];
-action_map[event.K_a+'_dbl_hold'] = ['turn -1', 'run', 'move'];
-action_map[event.K_d+'_dbl_hold'] = ['turn 1', 'run', 'move'];
-action_map[event.K_SPACE] = ['jump'];
-
-exports.keys = action_map;
-
-exports.actions = {
+exports.Actions = {
   turn: function(msDuration, direction) {
     if (!direction) {
       this.face(this.facing * -1);
@@ -117,5 +80,20 @@ exports.actions = {
   
   idle: function(msDuration) {
     //player.animation('idle');
+  },
+  
+  is_far_from_edge: function() {
+    return !this.actions.is_near_edge.call(this);
+  },
+
+  is_near_edge: function() {
+    if (!this.platform) return false;
+
+    if (this.facing == -1) {
+      return this.position[0] < this.platform.left + 40;
+    } else {
+      return this.position[0] > this.platform.right - 40;
+    }
   }
 }
+

@@ -9,7 +9,6 @@ var entities = require('partitions/entities');
 var mob = require('mob');
 
 var GameScene = exports.GameScene = function(game) {
-console.log(mob);
   this.game = game;
   this.input_router = new input.Router();
 
@@ -81,12 +80,14 @@ console.log(mob);
   });
 
   // Player
+/*
   var player = mob.factory(world, 'hero');
   player.controller = new input.Controller(player, mob.roster['hero'].keys, mob.roster['hero'].actions); 
   this.input_router.register(player.controller);
   this.handleEvent = this.input_router.handleEvent;
 
   world.entities.insert(player);
+*/
 
   world.entities.insert( mob.factory(world, 'toothface') );
   
