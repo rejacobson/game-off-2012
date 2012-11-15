@@ -8,7 +8,8 @@ exports.stats = {
 };
 
 exports.settings = {
-  position: [100, 450],
+  position: [300, 450],
+  hitbox: new gamejs.Rect([0, 0], [24, 15]),
   update: function(msDuration) { }
 };
 

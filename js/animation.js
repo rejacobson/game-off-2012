@@ -29,6 +29,10 @@ Animation.prototype.state = function(cycle) {
   return this.currentCycle;
 };
 
+Animation.prototype.flip = function(direction) {
+  this.currentSpriteSheet = this.spriteSheets[direction];
+};
+
 Animation.prototype.start = function(cycle) {
   if (!this.spec[cycle]) return false;
 

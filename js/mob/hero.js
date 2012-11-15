@@ -10,6 +10,7 @@ exports.stats = {
 
 exports.settings = {
   position: [100, 450],
+  hitbox: new gamejs.Rect([0, 0], [12, 20]),
   update: function(msDuration) { }
 };
 

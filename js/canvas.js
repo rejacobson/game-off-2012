@@ -16,6 +16,14 @@ var registerCanvas = exports.registerCanvas = function(id, dimensions) {
   return getSurface(id);
 };
 
+var resizeCanvas = exports.resizeCanvas = function(id, size) {
+  var canvas = getCanvas(id);
+  canvas.width = size[0];
+  canvas.height = size[1];
+  CANVASES[id]['_surface'] = null;
+  return getSurface(id);
+};
+
 var getCanvas = exports.getCanvas = function(id) {
   return CANVASES[id]['_canvas'];
 };

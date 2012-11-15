@@ -44,7 +44,7 @@ var Creature = exports.Creature = function(world, name, stats, settings) {
   this.on_ground = true;
 
   this.animation = settings.animation;
-  this.hitbox = new gamejs.Rect([0, 0], [12, 20]);
+  this.hitbox = settings.hitbox || null;
 
   this.controller = settings.controller || null;
   this.update_callback = settings.update || null;
@@ -126,5 +126,6 @@ Creature.prototype.draw = function(display) {
 
 Creature.prototype.face = function(direction) {
   this.facing = parseInt(direction);
+  this.animation.flip(this.facing);
 }
 

@@ -12,14 +12,22 @@ var GameScene = exports.GameScene = function(game) {
   this.game = game;
   this.input_router = new input.Router();
 
+  var level = {
+    size: [1200, 1200]
+  };
+
+  var camera = {
+    size: [1200, 500]
+  };
+
   var world = {
     platforms: new platforms.PlatformManager(600, 20),
     poles: new poles.PoleManager(1200, 20),
     entities: new entities.EntityManager([1200, 600], [16, 8])
   }
 
-  var ground = new platforms.Platform(0, 1200, 500, {is_ground: true});
-  world.platforms.insert(ground); 
+  var ground = new platforms.Platform(100, 1100, 500, {is_ground: true});
+  world.platforms.insert(ground);
 
   var trunk = new tree.Tree({
 
@@ -80,14 +88,12 @@ var GameScene = exports.GameScene = function(game) {
   });
 
   // Player
-/*
-  var player = mob.factory(world, 'hero');
+  var player = mob.factory(world, 'hero', {}, {position: [200, 499]});
   player.controller = new input.Controller(player, mob.roster['hero'].keys, mob.roster['hero'].actions); 
   this.input_router.register(player.controller);
   this.handleEvent = this.input_router.handleEvent;
 
   world.entities.insert(player);
-*/
 
   world.entities.insert( mob.factory(world, 'toothface') );
   
