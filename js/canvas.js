@@ -2,18 +2,16 @@ var Surface = require('gamejs').Surface;
 
 var CANVASES = {};
 
-var registerCanvas = exports.registerCanvas = function(id, dimensions) {
+var registerCanvas = exports.registerCanvas = function(id, size) {
   var canvas = document.getElementById(id);
 
   if (canvas.tagName != 'CANVAS') {
     throw new Error('The id, '+ id +', is not a canvas element.');
   } 
 
-  canvas.width = dimensions[0];
-  canvas.height = dimensions[1];
-
   CANVASES[id] = { _canvas: canvas, _surface: null }; 
-  return getSurface(id);
+
+  return resizeCanvas(id, size);
 };
 
 var resizeCanvas = exports.resizeCanvas = function(id, size) {
@@ -24,13 +22,22 @@ var resizeCanvas = exports.resizeCanvas = function(id, size) {
   return getSurface(id);
 };
 
-var getCanvas = exports.getCanvas = function(id) {
-  return CANVASES[id]['_canvas'];
-};
-
+/**
+ * The Display (the canvas element) is most likely not in the top left corner
+ * of the browser due to CSS styling. To calculate the mouseposition within the
+ * canvas we need this offset.
+ * @see {gamejs.event}
+ * @ignore
+ *
+ * @returns {Array} [x, y] offset of the canvas
+ */
 exports._getCanvasOffset = function(id) {
   var boundRect = getCanvas(id).getBoundingClientRect();
   return [boundRect.left, boundRect.top];
+};
+
+var getCanvas = exports.getCanvas = function(id) {
+  return CANVASES[id]['_canvas'];
 };
 
 /**

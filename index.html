@@ -16,42 +16,34 @@
       background: url('/images/ajax-loader.gif');
     }
 
-    #canvases {
-      position: relative;
-    }
-    #canvases canvas {
-      position: absolute;
-      left: 0;
-      top: 0;
+    #viewport {
       border: 1px solid black;
     }
-
-    #background-canvas {
-      z-index: 0;
+    canvas#background {
       background-color: #000;
     }
-    #foreground-canvas {
-      z-index: 1;
-    }
   </style>
+  <script type="text/javascript" src="/public/jquery.min.js"></script>
+  <script type="text/javascript" src="/public/underscore-min.js"></script>
   <script type="text/javascript" src="/public/yabble.js"></script>
   <script type="text/javascript" src="/public/gamejs.min.js"></script>
-  <script type="text/javascript" src="/public/underscore-min.js"></script>
   <script>
       require.setModuleRoot('./js/');
       require.run('main')
   </script>
 </head>
 <body>
-    <div id="canvases">
-        <div id="gjs-loader">
-         Loading...
-        </div>
-        <canvas id="background-canvas"></canvas>
-        <canvas id="foreground-canvas"></canvas>
-        <p>
-        Powered by <a href="http://gamejs.org">GameJs</a>.
-        </p>
+
+  <div id="gjs-loader">Loading...</div>
+
+  <div id="viewport">
+    <div id="layers">
+      <canvas id="background"></canvas>
+      <canvas id="main"></canvas>
+      <canvas id="foreground"></canvas>
     </div>
+    <canvas id="hud"></canvas>
+  </div>
+
 </body>
 </html>
