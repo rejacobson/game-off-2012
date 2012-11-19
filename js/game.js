@@ -22,7 +22,7 @@ var requestAnimationFrame=(function(){
      
 })();
 
-var Director = exports.Director = function(displays) {
+var Director = exports.Director = function() {
   var onAir = false;
   var activeScene = null;
   var last_t;
@@ -57,7 +57,7 @@ var Director = exports.Director = function(displays) {
   }
 
   function tick_render(msDuration){
-    if (activeScene.draw) activeScene.draw(displays, msDuration);
+    if (activeScene.draw) activeScene.draw();
   }
 
   this.start = function(scene) {
@@ -89,11 +89,9 @@ exports.init = function() {
 var Game = exports.Game = function() {
   this.director = null;
   this.player = null;
-  this.displays = null;
 
-  this.start = function(displays){
-    this.displays = displays;
-    this.director = new Director(displays);
+  this.start = function(){
+    this.director = new Director();
     this.game_scene = new scenes.GameScene(this);
     this.director.start(this.game_scene);
     //this.playLevel(levels.drycircuit, false, true);

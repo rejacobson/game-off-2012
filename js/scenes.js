@@ -1,4 +1,5 @@
 var gamejs = require('gamejs');
+var gamescreen = require('gamescreen').instance();
 var input = require('input');
 var tree = require('tree');
 
@@ -12,24 +13,18 @@ var GameScene = exports.GameScene = function(game) {
   this.game = game;
   this.input_router = new input.Router();
 
-  var level = {
-    size: [1200, 1200]
-  };
-
-  var camera = {
-    size: [1200, 500]
-  };
+  gamescreen.levelSize([2000, 800]);
 
   var world = {
-    platforms: new platforms.PlatformManager(600, 20),
-    poles: new poles.PoleManager(1200, 20),
-    entities: new entities.EntityManager([1200, 600], [16, 8])
+    platforms: new platforms.PlatformManager(800, 20),
+    poles: new poles.PoleManager(2000, 20),
+    entities: new entities.EntityManager([2000, 800], [16, 8])
   }
 
-  var ground = new platforms.Platform(100, 1100, 500, {is_ground: true});
+  var ground = new platforms.Platform(600, 1400, 700, {is_ground: true});
   world.platforms.insert(ground);
 
-  var trunk = new tree.Tree({
+  var trunk = new tree.Tree([1000, 700], {
 
     // Called when a branch changes direction
     onBranch: function() {
@@ -88,20 +83,23 @@ var GameScene = exports.GameScene = function(game) {
   });
 
   // Player
-  var player = mob.factory(world, 'hero', {}, {position: [200, 499]});
+  var player = mob.factory(world, 'hero', {}, {position: [800, 699]});
   player.controller = new input.Controller(player, mob.roster['hero'].keys, mob.roster['hero'].actions); 
   this.input_router.register(player.controller);
   this.handleEvent = this.input_router.handleEvent;
 
+  gamescreen.follow(player);
+
   world.entities.insert(player);
 
-  world.entities.insert( mob.factory(world, 'toothface') );
+  world.entities.insert( mob.factory(world, 'toothface', {}, {position: [900, 699]}) );
   
 
   /////////////////////////
   // Update
   /////////////////////////
   this.update = function(msDuration) {
+    gamescreen.update(msDuration);
     this.input_router.update(msDuration);
     world.entities.update(msDuration);
     trunk.update(msDuration);
@@ -110,15 +108,17 @@ var GameScene = exports.GameScene = function(game) {
   /////////////////////////
   // Draw
   /////////////////////////
-  this.draw = function(displays) {
-    trunk.draw(displays['background']);
-    world.platforms.draw(displays['background']);
-    world.poles.draw(displays['background']);
+  this.draw = function() {
+    trunk.draw(gamescreen.display('background'));
+    world.platforms.draw(gamescreen.display('background'));
+    world.poles.draw(gamescreen.display('background'));
 
     // Clear the canvas before drawing
-    displays['foreground'].clear();
+    gamescreen.display('main').clear();
 
-    world.entities.draw(displays['foreground']);
+    world.entities.draw(gamescreen.display('main'));
+  
+    gamescreen.draw(gamescreen.display('main'));
   }
   
   this.destroy = function() {}

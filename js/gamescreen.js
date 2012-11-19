@@ -32,10 +32,10 @@ var GameScreen = function(screen_size) {
   };
   
   this.displays = {
-    background: canvas.registerCanvas('background', screen_size),
-    main: canvas.registerCanvas('main', screen_size),
-    foreground: canvas.registerCanvas('foreground', screen_size),
-    hud: canvas.registerCanvas('hud', screen_size)
+    background: canvas.register('background', screen_size),
+    main: canvas.register('main', screen_size),
+    foreground: canvas.register('foreground', screen_size),
+    hud: canvas.register('hud', screen_size)
   };
   
   this.target = null;  // An entity, or an object with a 'position' property, to track
@@ -62,10 +62,10 @@ GameScreen.prototype.levelSize = function(size) {
   var self = this;
   
   _.each(['background', 'main', 'foreground'], function(d) {
-    self.displays[d] = self.displays[d].resize(size);
+    self.displays[d] = canvas.resize(d, size);
   });
   
-  this.viewport.slot = new gamejs.Rect(this.viewport.halfsize, vectors.subtract(size, this.viewport.halfsize));
+  this.viewport.slot = new gamejs.Rect(this.viewport.halfsize, vectors.subtract(size, this.viewport.size));
 };
 
 GameScreen.prototype.clear = function() {
@@ -74,13 +74,23 @@ GameScreen.prototype.clear = function() {
   });
 };
 
-GameScreen.prototype.track = function(target) {
+GameScreen.prototype.follow = function(target) {
   if (!target.position) return;
   this.target = target;
 };
 
 GameScreen.prototype.moveTo = function(position) {
-  if (!this.viewport.slot.collidePoint(position)) return;
+  if (position[0] > this.viewport.slot.right) {
+    position[0] = this.viewport.slot.right;
+  } else if (position[0] < this.viewport.slot.left) {
+    position[0] = this.viewport.slot.left;
+  }
+
+  if (position[1] > this.viewport.slot.bottom) {
+    position[1] = this.viewport.slot.bottom;
+  } else if (position[1] < this.viewport.slot.top) {
+    position[1] = this.viewport.slot.top;
+  }
   
   this.viewport.center = position;
 
@@ -93,11 +103,20 @@ GameScreen.prototype.moveTo = function(position) {
 GameScreen.prototype.update = function(msDuration) {
   if (!this.target) return;
   
-  if (this.viewport.center != this.tracker.position) {
-    var direction = vectors.unit(vectors.subtract(this.tracker.position, this.viewport.center)),
-        vector = vectors.multiply(direction, this.track_speed * msDuration),
+  if (this.viewport.center != this.target.position) {
+    var distance = vectors.distance(this.target.position, this.viewport.center);
+
+    if (distance < 20) return;
+ 
+    var direction = vectors.unit(vectors.subtract(this.target.position, this.viewport.center)),
+        vector = vectors.multiply(direction, distance * msDuration),
         position = vectors.add(this.viewport.center, vector);
     
     this.moveTo(position);
   }
+};
+
+GameScreen.prototype.draw = function(display) {
+  gamejs.draw.rect(display, '#ffff00', this.viewport.slot, 2);
+  gamejs.draw.circle(display, '#ff00ff', this.viewport.center, 5, 2);
 };

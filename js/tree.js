@@ -3,9 +3,9 @@ var util = require('util');
 var vectors = gamejs.utils.vectors;
 
 
-var Tree = exports.Tree = function(settings) {
+var Tree = exports.Tree = function(seed_position, settings) {
   this.leads = [];
-  this.base = [500, 500];
+  this.base = seed_position;
 
   this.settings = {
     onBend: function() {},
@@ -22,7 +22,7 @@ var Tree = exports.Tree = function(settings) {
     trend: [0, -1],
     momentum: 3,
     sprouts: 6,
-    bounds: [null, 50, null, 450]
+    bounds: [null, 100, null, this.base[1] - 50] // left, top, right, bottom
   });
 };
 

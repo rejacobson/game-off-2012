@@ -2,7 +2,7 @@ var Surface = require('gamejs').Surface;
 
 var CANVASES = {};
 
-var registerCanvas = exports.registerCanvas = function(id, size) {
+var register = exports.register = function(id, size) {
   var canvas = document.getElementById(id);
 
   if (canvas.tagName != 'CANVAS') {
@@ -11,10 +11,10 @@ var registerCanvas = exports.registerCanvas = function(id, size) {
 
   CANVASES[id] = { _canvas: canvas, _surface: null }; 
 
-  return resizeCanvas(id, size);
+  return resize(id, size);
 };
 
-var resizeCanvas = exports.resizeCanvas = function(id, size) {
+var resize = exports.resize = function(id, size) {
   var canvas = getCanvas(id);
   canvas.width = size[0];
   canvas.height = size[1];
