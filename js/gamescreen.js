@@ -66,10 +66,12 @@ GameScreen.prototype.levelSize = function(size) {
   });
   
   this.viewport.slot = new gamejs.Rect(this.viewport.halfsize, vectors.subtract(size, this.viewport.size));
+
+  this.moveTo(this.viewport.slot.center);
 };
 
 GameScreen.prototype.clear = function() {
-  _.each(_.keys(this.displays), function(d) {
+  _.each(this.displays, function(d) {
     d.clear();
   });
 };
@@ -80,24 +82,27 @@ GameScreen.prototype.follow = function(target) {
 };
 
 GameScreen.prototype.moveTo = function(position) {
-  if (position[0] > this.viewport.slot.right) {
-    position[0] = this.viewport.slot.right;
-  } else if (position[0] < this.viewport.slot.left) {
-    position[0] = this.viewport.slot.left;
+  // create a copy of the position, as it could be modified
+  var moveto = position.slice(0);
+
+  if (moveto[0] > this.viewport.slot.right) {
+    moveto[0] = this.viewport.slot.right;
+  } else if (moveto[0] < this.viewport.slot.left) {
+    moveto[0] = this.viewport.slot.left;
   }
 
-  if (position[1] > this.viewport.slot.bottom) {
-    position[1] = this.viewport.slot.bottom;
-  } else if (position[1] < this.viewport.slot.top) {
-    position[1] = this.viewport.slot.top;
+  if (moveto[1] > this.viewport.slot.bottom) {
+    moveto[1] = this.viewport.slot.bottom;
+  } else if (moveto[1] < this.viewport.slot.top) {
+    moveto[1] = this.viewport.slot.top;
   }
   
-  this.viewport.center = position;
+  this.viewport.center = moveto;
 
   var left = this.viewport.halfsize[0] - this.viewport.center[0],
       top = this.viewport.halfsize[1] - this.viewport.center[1];
 
-  this.layers.css({left:left, top:top});
+  this.layers.css({left:parseInt(left), top:parseInt(top)});
 };
 
 GameScreen.prototype.update = function(msDuration) {

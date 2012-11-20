@@ -57,7 +57,7 @@ exports.Actions = {
   move_down: function(msDuration){
     if (this.pole) {
       this.position[1] += 90 * msDuration;
-    } else if (this.on_ground && this.platform && this.platform.settings.is_ground == false) {
+    } else if (this.on_ground && this.platform && this.platform.settings.fall_through == true) {
       this.position[entity.Y] += 1;
       this.on_ground = false;
       this.platform = null;

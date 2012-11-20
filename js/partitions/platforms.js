@@ -71,7 +71,7 @@ var Platform = exports.Platform = function(left, right, top, settings) {
   this.top = top;
 
   var defaults = {
-    is_ground: false
+    fall_through: true
   };
 
   this.settings = _.extend(defaults, settings);

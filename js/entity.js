@@ -78,6 +78,9 @@ Creature.prototype.update = function(msDuration) {
   // Gravity
   if (!this.pole) this.velocity[Y] += 2000 * msDuration;
 
+  // Terminal Velocity
+  if (this.velocity[Y] > 500) this.velocity[Y] = 500;
+
   // Find a new platform to land on
   if (!this.platform && this.velocity[Y] > 0) {
     this.platform = this.world.platforms.findClosest(this.position); 

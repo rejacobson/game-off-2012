@@ -77,9 +77,7 @@ var Pole = exports.Pole = function(top, bottom, left, settings) {
   this.bottom = bottom;
   this.left = left;
 
-  var defaults = {
-    is_ground: false
-  };
+  var defaults = { };
 
   this.settings = _.extend(defaults, settings);
 };
