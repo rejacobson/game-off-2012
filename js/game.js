@@ -1,48 +1,96 @@
 var gamejs = require('gamejs');
 var scenes = require('scenes');
 
-var requestAnimationFrame=(function(){
-    //Check for each browser
-    //@paul_irish function
-    //Globalises this function to work on any browser as each browser has a different namespace for this
-    try{
-        window;
-    } catch(e){
-        return;
-    }
-    
-    return window.requestAnimationFrame || //Chromium
-            window.webkitRequestAnimationFrame || //Webkit
-            window.mozRequestAnimationFrame || //Mozilla Geko
-            window.oRequestAnimationFrame || //Opera Presto
-            window.msRequestAnimationFrame || //IE Trident?
-            function(callback, element){ //Fallback function
-                window.setTimeout(callback, 1000/settings.get('FPS'));
-            }
+var requestAnimationFrame = (function(){
+  //Check for each browser
+  //@paul_irish function
+  //Globalises this function to work on any browser as each browser has a different namespace for this
+  try{
+    window;
+  } catch(e){
+    return;
+  }
+  
+  return window.requestAnimationFrame || //Chromium
+         window.webkitRequestAnimationFrame || //Webkit
+         window.mozRequestAnimationFrame || //Mozilla Geko
+         window.oRequestAnimationFrame || //Opera Presto
+         window.msRequestAnimationFrame || //IE Trident?
+         function(callback, element) { //Fallback function
+           window.setTimeout(callback, 1000/settings.get('FPS'));
+         }
      
 })();
 
+var pageHiddenProperty = (function(){
+  var prefixes = ['webkit','moz','ms','o'];
+  
+  // if 'hidden' is natively supported just return it
+  if ('hidden' in document) return 'hidden';
+  
+  // otherwise loop over all the known prefixes until we find one
+  for (var i = 0; i < prefixes.length; i++){
+    if ((prefixes[i] + 'Hidden') in document) return prefixes[i] + 'Hidden';
+  }
+
+  // otherwise it's not supported
+  return null;
+})();
+
+function pageIsHidden() {
+  if (!pageHiddenProperty) return false;
+  return document[pageHiddenProperty];
+};
+
+function onVisibilityChange(hidden_callback, visible_callback) {
+  if (pageHiddenProperty) {
+    var eventname = pageHiddenProperty.replace(/[H|h]idden/, '') + 'visibilitychange';
+    document.addEventListener(eventname, function(event){
+      if (pageIsHidden()) {
+        if (hidden_callback && _.isFunction(hidden_callback)) hidden_callback(event);
+      } else {
+        if (visible_callback && _.isFunction(visible_callback)) visible_callback(event);
+      }
+    });
+  }
+};
+
+
 var Director = exports.Director = function() {
-  var onAir = false;
-  var activeScene = null;
-  var last_t;
+  var activeScene = null,
+      t,
+      last_t,
+      msDuration,
+      paused = false;
 
   function tick(t){
-    t=t || (new Date()).getTime();
-    msDuration=t-last_t;
-    last_t=t;
+    t = t || (new Date()).getTime();
+    msDuration = t - last_t;
+    last_t = t;
 
-    msDuration = msDuration*0.001;
+    msDuration = msDuration * 0.001;
 
     if (activeScene){
       tick_logic(msDuration);
       tick_render(msDuration);
     }
-    requestAnimationFrame(tick);
+
+    if (!paused) requestAnimationFrame(tick);
   }
 
+  function pause() {
+    paused = true;
+  }
+
+  function unpause() {
+    paused = false;
+    last_t = (new Date()).getTime() - msDuration;
+    tick();
+  }
+
+  onVisibilityChange(pause, unpause);
+
   function tick_logic(msDuration){
-    if (!onAir) return;
     if (activeScene.handleEvent) {
       var evts = gamejs.event.get();
       var i;
@@ -61,7 +109,6 @@ var Director = exports.Director = function() {
   }
 
   this.start = function(scene) {
-    onAir = true;
     this.replaceScene(scene);
     return;
   };
