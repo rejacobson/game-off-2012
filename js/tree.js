@@ -1,4 +1,5 @@
 var gamejs = require('gamejs');
+var srand = require('srand');
 var util = require('util');
 var vectors = gamejs.utils.vectors;
 
@@ -126,7 +127,7 @@ Lead.prototype.grow = function() {
       directions = _.shuffle(directions);
     }
 
-    var new_direction = directions[util.roll(directions.length)];
+    var new_direction = directions[srand.range(directions.length-1)];
     var new_destination = vectors.add(this.position, vectors.multiply(new_direction, this.step));
 
     if (!this.in_bounds(new_destination)) {
@@ -143,9 +144,9 @@ Lead.prototype.grow = function() {
     this.tree.settings.onBranch.call(this);
   }
 
-  if (this.generation < 3 && this.width >= 2 && util.roll(100) < this.sprout_percentage()) {
+  if (this.generation < 3 && this.width >= 2 && srand.range(100) < this.sprout_percentage()) {
     sprout_directions = _.without(sprout_directions, this.direction); //_.reject(sprout_directions, function(d) { d == this.direction });
-    var dir = sprout_directions[util.roll(sprout_directions.length)];
+    var dir = sprout_directions[srand.range(sprout_directions.length-1)];
     var dest = vectors.add(this.position, vectors.multiply(dir, this.step));
 
     if (this.in_bounds(dest)) {

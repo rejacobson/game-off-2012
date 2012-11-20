@@ -1,5 +1,5 @@
 var gamejs = require('gamejs');
-var util = require('util');
+var srand = require('srand');
 var platforms = require('partitions/platforms');
 var poles = require('partitions/poles');
 var entities = require('partitions/entities');
@@ -95,7 +95,7 @@ level[1] = {
           //
           // Randomly spawn a monster
           //
-          if (util.roll(1000) >= 995) {
+          if (srand.range(1000) >= 995) {
             world.entities.insert( mob.factory(world, 'toothface', {}, {position: [this.position[0], this.position[1]-2]}) );
           } 
         }
