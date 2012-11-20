@@ -16,6 +16,19 @@ Grid.prototype.mapInsert = function(index, value) {
   this.map[index] = value;  
 };
 
+Grid.prototype.mapRemove = function(index, value) {
+  var cell = this.mapFetch(index);
+
+  for (var i=0; i<cell.length; ++i) {
+    if (cell[i] == value) {
+      cell.splice(i, 1);
+      break;
+    }
+  }
+
+  return value;
+};
+
 Grid.prototype.mapFetch = function(index, _default) {
   // Return multiple indices
   if (_.isArray(index)) {

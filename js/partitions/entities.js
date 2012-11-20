@@ -27,25 +27,14 @@ EntityManager.prototype.remove = function(entity) {
 
   this.entities.splice(entity._map_index, 1);
   
-  for (var i=0; i<cell.length; ++i) {
-    if (cell[i] == entity) {
-      cell.splice(i, 1);
-      break;
-    }
-  }
+  this.mapRemove(index, entity);
 };
 
 EntityManager.prototype.reindex = function(index, entity) {
   if (index == entity._cell_index) return;
   
   if (entity._cell_index) {
-    var old_cell = this.mapFetch(entity._cell_index);
-    for (var i=0; i<old_cell.length; ++i) {
-      if (old_cell[i] == entity) {
-        old_cell.splice(i, 1);
-        break; 
-      }
-    }
+    this.mapRemove(entity._cell_index, entity);
   }
 
   entity._cell_index = index;
@@ -67,11 +56,9 @@ EntityManager.prototype.draw = function(display) {
     e = this.entities[i]; 
     if (e.draw) e.draw(display); 
 
-/*
     rect.width = this.settings.cell_size[0];
     rect.height = this.settings.cell_size[1];
     rect.topleft = this.mapPosition(e._cell_index);
     gamejs.draw.rect(display, '#00ffff', rect, 1);
-*/
   }
 };
