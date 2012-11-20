@@ -1,4 +1,5 @@
 var gamejs = require('gamejs');
+var util = require('util');
 var platforms = require('partitions/platforms');
 var poles = require('partitions/poles');
 var entities = require('partitions/entities');
@@ -21,6 +22,9 @@ function create_partitions(worldsize) {
  */
 var level = exports.level = {};
 
+///////////////////////
+// Level 1
+///////////////////////
 level[1] = {
   load: function() {
     var worldsize = [2000, 800],
@@ -91,6 +95,9 @@ level[1] = {
           //
           // Randomly spawn a monster
           //
+          if (util.roll(1000) >= 995) {
+            world.entities.insert( mob.factory(world, 'toothface', {}, {position: [this.position[0], this.position[1]-2]}) );
+          } 
         }
 
         // Pole growth

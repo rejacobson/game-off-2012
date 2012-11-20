@@ -41,6 +41,8 @@ var GameScreen = function(screen_size) {
   this.target = null;  // An entity, or an object with a 'position' property, to track
   
   this.track_speed = 50;
+
+  this.track_tolerance = 100;
   
   this.layers = $('#layers');
   
@@ -111,7 +113,7 @@ GameScreen.prototype.update = function(msDuration) {
   if (this.viewport.center != this.target.position) {
     var distance = vectors.distance(this.target.position, this.viewport.center);
 
-    if (distance < 20) return;
+    if (distance < this.track_tolerance) return;
  
     var direction = vectors.unit(vectors.subtract(this.target.position, this.viewport.center)),
         vector = vectors.multiply(direction, distance * msDuration),
@@ -123,5 +125,5 @@ GameScreen.prototype.update = function(msDuration) {
 
 GameScreen.prototype.draw = function(display) {
   gamejs.draw.rect(display, '#ffff00', this.viewport.slot, 2);
-  gamejs.draw.circle(display, '#ff00ff', this.viewport.center, 5, 2);
+  gamejs.draw.circle(display, '#ff00ff', this.viewport.center, this.track_tolerance, 2);
 };
