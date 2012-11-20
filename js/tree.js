@@ -127,7 +127,7 @@ Lead.prototype.grow = function() {
       directions = _.shuffle(directions);
     }
 
-    var new_direction = directions[srand.range(directions.length-1)];
+    var new_direction = directions[srand.random.range(directions.length-1)];
     var new_destination = vectors.add(this.position, vectors.multiply(new_direction, this.step));
 
     if (!this.in_bounds(new_destination)) {
@@ -144,9 +144,9 @@ Lead.prototype.grow = function() {
     this.tree.settings.onBranch.call(this);
   }
 
-  if (this.generation < 3 && this.width >= 2 && srand.range(100) < this.sprout_percentage()) {
+  if (this.generation < 3 && this.width >= 2 && srand.random.range(100) < this.sprout_percentage()) {
     sprout_directions = _.without(sprout_directions, this.direction); //_.reject(sprout_directions, function(d) { d == this.direction });
-    var dir = sprout_directions[srand.range(sprout_directions.length-1)];
+    var dir = sprout_directions[srand.random.range(sprout_directions.length-1)];
     var dest = vectors.add(this.position, vectors.multiply(dir, this.step));
 
     if (this.in_bounds(dest)) {
@@ -173,8 +173,8 @@ Lead.prototype.heading = function(direction) {
 
 Lead.prototype.candidate_directions = function() {
   return [
-    this.direction,
     vectors.leftNormal(this.direction),
+    this.direction,
     vectors.rightNormal(this.direction)
   ]; 
 };

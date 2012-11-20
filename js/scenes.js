@@ -33,6 +33,18 @@ var GameScene = exports.GameScene = function(game) {
     this.input_router.update(msDuration);
 
     world.entities.update(msDuration);
+    
+/*
+    // collision detection
+    var cells = _.filter(world.entities.occupied_cells, function(cell) {
+      cell.length > 1;
+    });
+
+    _.each(cells, function(cell) {
+      var adjacent = world.entities.adjacent(cell);
+      
+    });
+*/
 
     for (var i = 0, len = world.trees.length; i<len; ++i) {
       world.trees[i].update(msDuration);

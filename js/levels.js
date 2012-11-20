@@ -54,7 +54,9 @@ level[1] = {
 
       // Called when a branch changes direction
       onBranch: function() {
-
+  var x = this.position[0],
+      y = this.position[1];
+console.log(srand.noise.percentage(x, y*10000));
         // Branched left or right
         if (this.direction[1] == 0) {
           this.platform = new platforms.Platform(this.position[0], this.position[0], this.position[1]); 
@@ -95,7 +97,7 @@ level[1] = {
           //
           // Randomly spawn a monster
           //
-          if (srand.range(1000) >= 995) {
+          if (srand.random.range(1000) >= 995) {
             world.entities.insert( mob.factory(world, 'toothface', {}, {position: [this.position[0], this.position[1]-2]}) );
           } 
         }
