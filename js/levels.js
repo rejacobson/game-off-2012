@@ -10,9 +10,9 @@ var mob = require('mob');
 
 function create_partitions(worldsize) {
   return {
-    platforms: new platforms.PlatformManager(worldsize[1], 20),
-    poles: new poles.PoleManager(worldsize[0], 20),
-    entities: new entities.EntityManager(worldsize, [16, 8])
+    platforms: new platforms.PlatformManager(worldsize[1], 50),
+    poles: new poles.PoleManager(worldsize[0], 50),
+    entities: new entities.EntityManager(worldsize, [50, 50])
   };  
 }
 
@@ -44,7 +44,7 @@ level[1] = {
 
     gamescreen.clear();
     gamescreen.levelSize(worldsize);
-    //gamescreen.moveTo(seed_at);
+    gamescreen.moveTo(seed_at);
     gamescreen.follow(player);
 
     // Insert base platform
@@ -54,9 +54,7 @@ level[1] = {
 
       // Called when a branch changes direction
       onBranch: function() {
-  var x = this.position[0],
-      y = this.position[1];
-console.log(srand.noise.percentage(x, y*10000));
+
         // Branched left or right
         if (this.direction[1] == 0) {
           this.platform = new platforms.Platform(this.position[0], this.position[0], this.position[1]); 
@@ -97,9 +95,11 @@ console.log(srand.noise.percentage(x, y*10000));
           //
           // Randomly spawn a monster
           //
+/*
           if (srand.random.range(1000) >= 995) {
             world.entities.insert( mob.factory(world, 'toothface', {}, {position: [this.position[0], this.position[1]-2]}) );
           } 
+*/
         }
 
         // Pole growth

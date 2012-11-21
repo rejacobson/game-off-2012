@@ -21,8 +21,6 @@ var GameScene = exports.GameScene = function(game) {
   this.input_router.register(world.player.controller);
   this.handleEvent = this.input_router.handleEvent;
 
-  //world.entities.insert( mob.factory(world, 'toothface', {}, {position: [900, 699]}) );
-  
 
   /////////////////////////
   // Update
@@ -35,14 +33,19 @@ var GameScene = exports.GameScene = function(game) {
     world.entities.update(msDuration);
     
 /*
-    // collision detection
-    var cells = _.filter(world.entities.occupied_cells, function(cell) {
-      cell.length > 1;
-    });
+    // Collision detection
+    _.each(world.entities.mapUsage(), function(count, index) {
+      if (count > 1) {
+        var current = world.entities.mapFetch(index), 
+            surroundings = world.entities.mapFetchSurrounding(index);
 
-    _.each(cells, function(cell) {
-      var adjacent = world.entities.adjacent(cell);
-      
+        for (var i=0, ilen=current.length; i<len; ++i) {
+          for (var j=0, jlen=surroundings.length; j<len; ++j) {
+            //var e1 = current[i], e2 = surroundings    
+          };
+        };
+        
+      }
     });
 */
 
@@ -68,7 +71,7 @@ var GameScene = exports.GameScene = function(game) {
 
     world.entities.draw(gamescreen.display('main'));
   
-    gamescreen.draw(gamescreen.display('main'));
+    //gamescreen.draw(gamescreen.display('main'));
   }
   
   this.destroy = function() {}

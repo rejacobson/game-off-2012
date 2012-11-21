@@ -1,11 +1,8 @@
 var gamejs = require('gamejs');
 var spatialpartition = require('spatialpartition');
 
-var PlatformManager = exports.PlatformManager = function(height, buckets) {
-  spatialpartition.Grid.call(this, {
-    map_size: [1, height],
-    cells: [1, buckets]
-  });
+var PlatformManager = exports.PlatformManager = function(height, cellheight) {
+  spatialpartition.Grid.call(this, [1, height], [1, cellheight]);
 };
 PlatformManager.prototype = Object.create(spatialpartition.Grid.prototype);
 
@@ -23,7 +20,7 @@ PlatformManager.prototype.insert = function(platform) {
 };
 
 PlatformManager.prototype.findClosest = function(position) {
-  if (position[1] > this.settings.map_size[1]) return false;
+  if (position[1] > this.mapsize[1]) return false;
   
   var index = this.mapIndex([1, position[1]]);
   var platforms = _.compact(this.mapFetch([index, index+1]));

@@ -1,11 +1,8 @@
 var gamejs = require('gamejs');
 var spatialpartition = require('spatialpartition');
 
-var PoleManager = exports.PoleManager = function(width, buckets) {
-  spatialpartition.Grid.call(this, {
-    map_size: [width, 1],
-    cells: [buckets, 1]
-  });
+var PoleManager = exports.PoleManager = function(width, cellwidth) {
+  spatialpartition.Grid.call(this, [width, 1], [cellwidth, 1]);
 };
 PoleManager.prototype = Object.create(spatialpartition.Grid.prototype);
 
@@ -24,7 +21,7 @@ PoleManager.prototype.insert = function(pole) {
 
 PoleManager.prototype.findClosest = function(rect) {
   var x = rect.center[0];
-  if (x > this.settings.map_size[0]) return false;
+  if (x > this.mapsize[0]) return false;
   
   var index = this.mapIndex([x, 1]);
   var poles = _.compact(this.mapFetch([index-1, index, index+1]));
