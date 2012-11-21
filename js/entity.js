@@ -9,6 +9,13 @@ var X = exports.X = 0;
 var Y = exports.Y = 1;
 
 
+var NextId = (function(){
+  var id = 0;
+  return function() {
+    return ++id;
+  };
+})();
+
 //////////////////////////////////////////////////////////
 // Stats
 //////////////////////////////////////////////////////////
@@ -29,6 +36,8 @@ var Stats = exports.Stats = function(stats) {
 //////////////////////////////////////////////////////////
 var Creature = exports.Creature = function(world, name, stats, settings) {
   Stats.call(this, stats);
+
+  this.id = NextId(); 
 
   this.world = world;
  

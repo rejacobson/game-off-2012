@@ -2,12 +2,7 @@ var gamejs = require('gamejs');
 var levels = require('levels');
 var gamescreen = require('gamescreen').instance();
 var input = require('input');
-//var tree = require('tree');
-
-//var platforms = require('partitions/platforms');
-//var poles = require('partitions/poles');
-//var entities = require('partitions/entities');
-
+var collision = require('collision');
 var mob = require('mob');
 
 var GameScene = exports.GameScene = function(game) {
@@ -21,6 +16,7 @@ var GameScene = exports.GameScene = function(game) {
   this.input_router.register(world.player.controller);
   this.handleEvent = this.input_router.handleEvent;
 
+  collider = new collision.Resolver(world.entities);
 
   /////////////////////////
   // Update
@@ -32,22 +28,8 @@ var GameScene = exports.GameScene = function(game) {
 
     world.entities.update(msDuration);
     
-/*
     // Collision detection
-    _.each(world.entities.mapUsage(), function(count, index) {
-      if (count > 1) {
-        var current = world.entities.mapFetch(index), 
-            surroundings = world.entities.mapFetchSurrounding(index);
-
-        for (var i=0, ilen=current.length; i<len; ++i) {
-          for (var j=0, jlen=surroundings.length; j<len; ++j) {
-            //var e1 = current[i], e2 = surroundings    
-          };
-        };
-        
-      }
-    });
-*/
+    collider.resolve();
 
     for (var i = 0, len = world.trees.length; i<len; ++i) {
       world.trees[i].update(msDuration);

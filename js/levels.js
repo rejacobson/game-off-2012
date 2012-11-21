@@ -50,6 +50,9 @@ level[1] = {
     // Insert base platform
     world.platforms.insert( new platforms.Platform(600, 1400, spawn_at[1], {fall_through: false}) );
 
+    world.entities.insert( mob.factory(world, 'toothface', {}, {position: [900, spawn_at[1] - 2]}) );
+
+
     world.trees[0] = new tree.Tree(seed_at, {
 
       // Called when a branch changes direction

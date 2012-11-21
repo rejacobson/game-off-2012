@@ -10,7 +10,10 @@ exports.stats = {
 exports.settings = {
   position: [300, 450],
   hitbox: new gamejs.Rect([0, 0], [24, 15]),
-  update: function(msDuration) { }
+  update: function(msDuration) { },
+  collision: function(entity) {
+
+  }
 };
 
 exports.animation =  {

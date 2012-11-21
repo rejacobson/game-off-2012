@@ -44,9 +44,12 @@ Grid.prototype.mapUsage = function() {
 Grid.prototype.mapFetch = function(index, _default) {
   // Return multiple indices
   if (_.isArray(index)) {
-    var list = [];
+    var list = [], cell;
     for (var i=0, len=index.length; i<len; ++i) {
-      list = list.concat(this.map[index[i]]);
+      cell = index[i];
+      if (this.map[cell] && this.map[cell].length) {
+        list = list.concat(this.map[cell]);
+      }
     };
     return list;
   }
