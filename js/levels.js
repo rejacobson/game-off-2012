@@ -39,6 +39,7 @@ level[1] = {
       trees: []
     });
 
+    var monsters = _.keys(mob.roster);
 
     world.entities.insert(player);
 
@@ -99,7 +100,8 @@ level[1] = {
           // Randomly spawn a monster
           //
           if (srand.random.range(1000) >= 995) {
-            world.entities.insert( mob.factory(world, 'toothface', {}, {position: [this.position[0], this.position[1]-2]}) );
+            var monster = monsters[ srand.random.range(monsters.length-1) ]; 
+            world.entities.insert( mob.factory(world, monster, {}, {position: [this.position[0], this.position[1]-2]}) );
           } 
         }
 

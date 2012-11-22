@@ -1,7 +1,7 @@
 var gamejs = require('gamejs');
 var actions = require('actions');
 
-gamejs.preload(['images/mob/toothface.png']);
+gamejs.preload(['images/mob/mouthball.png']);
 
 exports.stats = {
   speed: 100
@@ -10,16 +10,9 @@ exports.stats = {
 exports.settings = function() {
   return {
     position: [300, 450],
-    hitbox: new gamejs.Rect([0, 0], [34, 20]),
+    hitbox: new gamejs.Rect([0, 0], [20, 20]),
     collision: function(entity) {
-      // Moving faster than the entity
-      if (this.velocity[0] != 0) { // && Math.abs(this.velocity[0]) > Math.abs(entity.velocity[0])) {
-
-        // Facing the entity
-        if (this.lookingAt(entity)) {
-          entity.pushedOff();
-        }
-      }
+      entity.pushedOff();
     }
   };
 
@@ -27,8 +20,8 @@ exports.settings = function() {
 
 exports.animation =  {
   spritesheet: {
-    image: 'images/mob/toothface.png',
-    framesize: [48, 28]
+    image: 'images/mob/mouthball.png',
+    framesize: [22, 22]
   },
   cycles: {
     idle: [0, 0]
@@ -55,3 +48,4 @@ exports.behaviour = {
     'walk': ['move']
   }*/
 };
+

@@ -4,7 +4,15 @@ var ai = require('ai');
 var collision = require('collision');
 
 var roster = exports.roster = {
+  'bloo': require('mob/bloo'),
+  'buggaloo': require('mob/buggaloo'),
+  'bunny': require('mob/bunny'),
+  'gazer': require('mob/gazer'),
   'hero': require('mob/hero'),
+  'mouth': require('mob/mouth'),
+  'mouthball': require('mob/mouthball'),
+  'snake': require('mob/snake'),
+  'spiky': require('mob/spiky'),
   'toothface': require('mob/toothface')
 };
 
