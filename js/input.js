@@ -63,6 +63,7 @@ var Router = exports.Router = function() {
           if (time - states[key+'_dbl'] < 200) {
             dbl[key] = -1;
             states[key+'_dbl'] = true;
+            actions[key+'_dbl'] = true;
             delete states[key];
 
           // Too late -- count it as the first keydown

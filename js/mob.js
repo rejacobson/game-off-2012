@@ -1,11 +1,18 @@
 var entity = require('entity');
 var animation = require('animation');
 var ai = require('ai');
+var collision = require('collision');
 
 var roster = exports.roster = {
   'hero': require('mob/hero'),
   'toothface': require('mob/toothface')
 };
+
+_.each(roster, function(data, name) {
+  if (data.collides_with) {
+    collision.matrix.add(name, data.collides_with);
+  }
+});
 
 exports.factory = function(world, name, _stats, _settings) {
   _stats = _stats || {};

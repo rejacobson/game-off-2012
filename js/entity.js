@@ -55,10 +55,14 @@ var Creature = exports.Creature = function(world, name, stats, settings) {
   this.animation = settings.animation;
   this.hitbox = settings.hitbox || null;
 
+  this.collision = settings.collision || null;
+
   this.controller = settings.controller || null;
   this.update_callback = settings.update || null;
 
   this.actions = {};
+
+  this.state = '';
 };
 
 Creature.prototype.update = function(msDuration) {
@@ -113,6 +117,7 @@ Creature.prototype.update = function(msDuration) {
     }
 
     if (this.velocity[X] == 0 && this.velocity[Y] == 0) {
+      this.state = 'idle';
       this.animation.state('idle'); 
     }
   }

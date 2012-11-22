@@ -1,6 +1,8 @@
 var gamejs = require('gamejs');
 var event = gamejs.event;
 var entity = require('entity');
+var collision = require('collision');
+
 
 gamejs.preload(['images/mob/hero.png']);
 
@@ -13,7 +15,28 @@ exports.settings = {
   hitbox: new gamejs.Rect([0, 0], [12, 20]),
   update: function(msDuration) { },
   collision: function(entity) {
-    
+    // Player is moving faster than the entity
+    if (this.velocity[0] != 0) { // && Math.abs(this.velocity[0]) > Math.abs(entity.velocity[0])) {
+
+      // Player and entity are facing the same direction
+      if (this.facing == entity.facing) {
+        
+        // Player is behind entity
+        // entity.x - player.x * player.facing > 0 if the player is behind the entity
+        // entity.x - player.x * player.facing < 0 if the player is in front of the entity
+        if (entity.position[0] - this.position[0] * this.facing > 0) {
+          var clip = this.hitbox.clip(entity.hitbox);
+          
+          if (this.state == 'walking') {
+            entity.position[0] += clip.width * this.facing;
+          } else if (this.state == 'running') {
+            entity.position[1] += 2; 
+            entity.velocity[0] = entity.velocity[0] * 3;
+            entity.platform = null;
+          }
+        }
+      } 
+    }
   }
 };
 
@@ -29,20 +52,35 @@ exports.animation =  {
   fps: 16 
 };
 
+exports.collides_with = ['*'];
+
 
 var action_map = {};
+// Climbing
 action_map[event.K_w+'_hold'] = ['move_up'];
 action_map[event.K_s+'_hold'] = ['move_down'];
+
+// Walking
 action_map[event.K_a+'_hold'] = ['turn -1', 'walk', 'move'];
 action_map[event.K_d+'_hold'] = ['turn 1', 'walk', 'move'];
-action_map[event.K_a+'_dbl_hold'] = ['turn -1', 'run', 'move'];
-action_map[event.K_d+'_dbl_hold'] = ['turn 1', 'run', 'move'];
+
+// Running
+action_map[event.K_a+'_dbl'] = ['turn -1', 'run'];
+action_map[event.K_d+'_dbl'] = ['turn 1', 'run'];
+
+// Continue running
+action_map[event.K_a+'_dbl_hold'] = ['move'];
+action_map[event.K_d+'_dbl_hold'] = ['move'];
+
+// Jump
 action_map[event.K_SPACE] = ['jump'];
 
 exports.keys = action_map;
 
 exports.actions = {
   turn: function(msDuration, direction) {
+    if (this.platform && !this.on_ground) return false;
+
     if (!direction) {
       this.face(this.facing * -1);
     } else {
@@ -57,6 +95,7 @@ exports.actions = {
 
     this.animation.state('walk');
     this.stats.speed = this.base_stats.speed;
+    this.state = 'walking';
 
     return true;
   }, 
@@ -66,6 +105,7 @@ exports.actions = {
 
     this.animation.state('walk');
     this.stats.speed = this.base_stats.speed * 3;
+    this.state = 'running';
 
     return true;
   }, 
