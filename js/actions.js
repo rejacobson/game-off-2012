@@ -90,9 +90,9 @@ exports.Actions = {
     if (!this.platform) return false;
 
     if (this.facing == -1) {
-      return this.position[0] < this.platform.left + 40;
+      return this.position[0] < this.platform.left + 20;
     } else {
-      return this.position[0] > this.platform.right - 40;
+      return this.position[0] > this.platform.right - 20;
     }
   }
 }

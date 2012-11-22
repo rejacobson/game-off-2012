@@ -77,15 +77,25 @@ var Resolver = exports.Resolver = function(entities) {
       for (var i=0; i<current_size; ++i) {
         e1 = combined[i];
 
+        if (!e1.interacting) continue;
+
         // Test against every other entity
         for (var j=i+1, jlen=combined.length; j<jlen; ++j) {
           e2 = combined[j];
-          if (stats.tested(e1, e2)) continue;
+
+          if (!e2.interacting || stats.tested(e1, e2)) continue;
+
           stats.add(e1, e2); 
           // Test e1 and e2
           if (e1.hitbox.collideRect(e2.hitbox)) {
-            if (e1.collision && matrix.collidable(e1.name, e2.name)) e1.collision(e2);
-            if (e2.collision && matrix.collidable(e2.name, e1.name)) e2.collision(e1);
+/*
+console.log(e1);
+console.log(e2);
+console.log('e1 interacting?: '+e1.interacting);
+*/
+            if (e1.collision && matrix.collidable(e1.name, e2.name) && e1.interacting) e1.collision(e2);
+//console.log('e2 interacting?: '+e2.interacting);
+            if (e2.collision && matrix.collidable(e2.name, e1.name) && e2.interacting) e2.collision(e1);
           }
         };
       };

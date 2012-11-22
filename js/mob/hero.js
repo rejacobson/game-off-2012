@@ -1,8 +1,6 @@
 var gamejs = require('gamejs');
 var event = gamejs.event;
 var entity = require('entity');
-var collision = require('collision');
-
 
 gamejs.preload(['images/mob/hero.png']);
 
@@ -10,34 +8,32 @@ exports.stats = {
   speed: 100
 };
 
-exports.settings = {
-  position: [100, 450],
-  hitbox: new gamejs.Rect([0, 0], [12, 20]),
-  update: function(msDuration) { },
-  collision: function(entity) {
-    // Player is moving faster than the entity
-    if (this.velocity[0] != 0) { // && Math.abs(this.velocity[0]) > Math.abs(entity.velocity[0])) {
+exports.settings = function() {
+  return {
+    hitbox: new gamejs.Rect([0, 0], [12, 20]),
+    collision: function(entity) {
+      // Player is moving faster than the entity
+      if (this.velocity[0] != 0) { // && Math.abs(this.velocity[0]) > Math.abs(entity.velocity[0])) {
 
-      // Player and entity are facing the same direction
-      if (this.facing == entity.facing) {
-        
-        // Player is behind entity
-        // entity.x - player.x * player.facing > 0 if the player is behind the entity
-        // entity.x - player.x * player.facing < 0 if the player is in front of the entity
-        if (entity.position[0] - this.position[0] * this.facing > 0) {
-          var clip = this.hitbox.clip(entity.hitbox);
-          
-          if (this.state == 'walking') {
-            entity.position[0] += clip.width * this.facing;
-          } else if (this.state == 'running') {
-            entity.position[1] += 2; 
-            entity.velocity[0] = entity.velocity[0] * 3;
-            entity.platform = null;
-          }
-        }
-      } 
+        switch (this.state) {
+          case 'walking':
+            if (this.lookingAt(entity)) {
+              var clip = this.hitbox.clip(entity.hitbox);
+              entity.position[0] += (clip.width * 2) * this.facing;
+            }
+            break;
+
+          case 'running':
+            if (this.facing == entity.facing && this.lookingAt(entity)) {
+              entity.pushedOff();
+            }
+            break;
+        };
+
+      }
     }
-  }
+  };
+
 };
 
 exports.animation =  {
@@ -79,7 +75,7 @@ exports.keys = action_map;
 
 exports.actions = {
   turn: function(msDuration, direction) {
-    if (this.platform && !this.on_ground) return false;
+    if (!this.on_ground && !this.pole) return false;
 
     if (!direction) {
       this.face(this.facing * -1);
@@ -131,6 +127,7 @@ exports.actions = {
         this.platform = null;
         this.velocity = [0, 0];
         this.on_ground = false;
+        this.state = 'climbing';
       }
     }
   },
@@ -142,6 +139,7 @@ exports.actions = {
       this.position[entity.Y] += 1;
       this.on_ground = false;
       this.platform = null;
+      this.state = 'climbing';
     }
   },
 

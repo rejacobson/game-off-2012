@@ -92,6 +92,7 @@ var Director = exports.Director = function() {
   }
 
   onVisibilityChange(pause, unpause);
+  $(document).on('pause', pause);
 
   function tick_logic(msDuration){
     if (activeScene.handleEvent) {

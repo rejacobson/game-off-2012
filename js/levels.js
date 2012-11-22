@@ -98,11 +98,9 @@ level[1] = {
           //
           // Randomly spawn a monster
           //
-/*
           if (srand.random.range(1000) >= 995) {
             world.entities.insert( mob.factory(world, 'toothface', {}, {position: [this.position[0], this.position[1]-2]}) );
           } 
-*/
         }
 
         // Pole growth

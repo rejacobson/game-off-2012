@@ -82,26 +82,38 @@ var Router = exports.Router = function() {
   this.update = function(msDuration) {
     if (controllers.length <= 0) return;
     
-    for (key in states) {
+    var key = null, keys = null;
+
+    // Continuous key holds: states
+    keys = _.keys(states);
+    for (var k=0, klen=keys.length; k<klen; ++k) {
+      key = keys[k]; 
+
       if (states[key] !== true) continue;
       key = key+'_hold';
       
-      _.each(controllers, function(c) {
+      for (var i=0, c=null, len=controllers.length; i<len; ++i) {
+        c = controllers[i];
         if (c.implements(key)) {
           c.execute(key, msDuration, states);
         }
-      });
+      }
     }
 
-    for (key in actions) {
+    // Single key press events: actions
+    keys = _.keys(actions);
+    for (var k=0, klen=keys.length; k<klen; ++k) {
+      key = keys[k]; 
+
       if (actions[key] === -1) continue;
       actions[key] = -1;
 
-      _.each(controllers, function(c) {
+      for (var i=0, c=null, len=controllers.length; i<len; ++i) {
+        c = controllers[i];
         if (c.implements(key)) {
           c.execute(key, msDuration, states);
         }
-      });
+      }
     }
   }
 
@@ -119,15 +131,18 @@ var Controller = exports.Controller = function(entity, actionMap) {
   }
   
   this.execute = function(key, msDuration, key_states) {
-    _.each(actionMap[key], function(func) {
-      var args = func.split(' '), 
+    for (var i=0, len=actionMap[key].length; i<len; ++i) {
+      var func = actionMap[key][i],
+          args = func.split(' '), 
           func = args.shift();
           
       args.unshift(msDuration);
 
       if (actions[func]) {
+        //if (false === actions[func].apply(entity, args)) break;
         actions[func].apply(entity, args);
       }
-    });
+    }
   }
+
 };

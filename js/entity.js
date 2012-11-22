@@ -43,26 +43,29 @@ var Creature = exports.Creature = function(world, name, stats, settings) {
  
   this.name = name; 
 
-  this.velocity = [0, 0, 0];
-  this.position = settings.position;
+  this.velocity = [0, 0];
+  this.position = [0, 0];
 
-  this.platform = settings.platform;
-  this.pole = settings.pole;
+  this.platform = null;
+  this.pole = null;
 
   this.facing = RIGHT;  // Facing positive direction; east
-  this.on_ground = true;
+  this.on_ground = false;
 
-  this.animation = settings.animation;
-  this.hitbox = settings.hitbox || null;
+  this.animation = null;
+  this.hitbox = null;
 
-  this.collision = settings.collision || null;
-
-  this.controller = settings.controller || null;
-  this.update_callback = settings.update || null;
+  this.controller = null;
+  this.collision = null;
 
   this.actions = {};
 
   this.state = '';
+  this.interacting = true;
+
+  _.extend(this, settings);
+
+  if (!this.animation) throw new Error('Entities require an animation');
 };
 
 Creature.prototype.update = function(msDuration) {
@@ -95,7 +98,7 @@ Creature.prototype.update = function(msDuration) {
   if (this.velocity[Y] > 500) this.velocity[Y] = 500;
 
   // Find a new platform to land on
-  if (!this.platform && this.velocity[Y] > 0) {
+  if (this.state != 'falling' && !this.platform && this.velocity[Y] > 0) {
     this.platform = this.world.platforms.findClosest(this.position); 
   }
 
@@ -122,11 +125,13 @@ Creature.prototype.update = function(msDuration) {
     }
   }
 
+  // Update the hitbox position
   this.hitbox.left = this.position[0] - this.hitbox.width*0.5
   this.hitbox.bottom = this.position[1]; 
 
-  if (this.update_callback) {
-    this.update_callback.call(this, msDuration);
+  // Custom update callback
+  if (this.state != 'falling' && this.on_update) {
+    this.on_update.call(this, msDuration);
   }
 };
 
@@ -139,10 +144,23 @@ Creature.prototype.draw = function(display) {
     gamejs.draw.line(display, '#00ff00', [this.pole.left, this.pole.top], [this.pole.left, this.pole.bottom], 2);
   }
   gamejs.draw.rect(display, '#ffff00', this.hitbox, 1);
-}
+};
 
 Creature.prototype.face = function(direction) {
   this.facing = parseInt(direction);
   this.animation.flip(this.facing);
-}
+};
 
+// Returns true if this creature is facing, and looking at, another entity.
+Creature.prototype.lookingAt = function(entity) {
+  return (entity.position[0] - this.position[0]) * this.facing > 0;
+};
+
+Creature.prototype.pushedOff = function() {
+  this.state = 'falling';
+  this.platform = null;
+  this.pole = null;
+  this.on_ground = false;
+  this.interacting = false;
+  this.velocity[1] = -300;
+};

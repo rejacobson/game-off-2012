@@ -20,7 +20,7 @@ exports.factory = function(world, name, _stats, _settings) {
   
   var mob = roster[name],
       stats = _.extend(mob.stats, _stats),
-      settings = _.extend(mob.settings, _settings);
+      settings = _.extend(mob.settings(), _settings);
 
   settings.animation = animation.Animation.factory(mob.animation);
 
@@ -32,7 +32,7 @@ exports.factory = function(world, name, _stats, _settings) {
 
   if (mob.behaviour) {
     creature.controller = new ai.BehaviourTree(mob.behaviour, creature);
-    creature.update_callback = function(msDuration) {
+    creature.on_update = function(msDuration) {
       this.controller.update(msDuration);
     };
   }
