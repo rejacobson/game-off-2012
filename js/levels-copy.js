@@ -1,0 +1,196 @@
+var gamejs = require('gamejs');
+var srand = require('srand');
+var platforms = require('partitions/platforms');
+var poles = require('partitions/poles');
+var entities = require('partitions/entities');
+var gamescreen = require('gamescreen').instance();
+var tree = require('tree');
+var mob = require('mob');
+
+
+function create_partitions(worldsize) {
+  return {
+    platforms: new platforms.PlatformManager(worldsize[1], 50),
+    poles: new poles.PoleManager(worldsize[0], 50),
+    entities: new entities.EntityManager(worldsize, [50, 50])
+  };  
+}
+
+exports.load(level) {
+  return new Level(levels[level]); 
+};
+
+var World = exports.World = function(worldsize) {
+  return {
+    platforms: new platforms.PlatformManager(worldsize[1], 50),
+    poles: new poles.PoleManager(worldsize[0], 50),
+    entities: new entities.EntityManager(worldsize, [50, 50])
+  };
+};
+
+var Level = exports.Level = function(settings) {
+  var self = this;
+
+  this.settings = settings;
+  this.world = new World(settings.worldsize);
+
+  // Insert ground platforms
+  _.each(this.settings.ground, function(g) { 
+    //                                                 left  right top
+    this.world.platforms.insert( new platform.Platform(g[0], g[1], g[2], {fall_through: false}) );
+  });
+
+  // Ensure the player spawn point is above the first ground platform
+  var g = this.settings.ground[0];
+  if (this.settings.spawn[0] > g[1]) {
+    this.settings.spawn[0] = g[1] - 10;
+  } else if (this.settings.spawn[0] < g[0]) {
+    this.settings.spawn[0] = g[0] + 10;
+  }
+
+  // Players Y spawn point is on the first ground platform
+  this.settings.spawn[1] = g[2];
+
+  // Finish setting up the world
+  _.extend(this.world, {
+    size: this.settings.worldsize,
+    player: mob.factory(this.world, 'hero', {}, {position: this.settings.spawn}),
+    trees: []
+  });
+  
+  // Insert the player into the world
+  this.world.entities.insert(this.world.player);
+
+  // Setup the camera and views
+  gamescreen.clear();
+  gamescreen.levelSize(this.world.size);
+  gamescreen.moveTo(this.world.player.position);
+  gamescreen.follow(this.world.player);
+};
+
+var levels = {};
+
+var levels['level1'] = exports.level1 = {
+  worldsize: [2000, 800],
+  spawn: [800, 700],
+  ground: [[600, 1400, 700], [300, 700, 600]],  // First one is always the spawn point
+  seeds: [[1000, 700]],
+  mobs: {
+    'buggaloo': 15,
+    'bunny': 15,
+    'gazer': 5
+  },
+  tree_rules: {},
+   
+}
+
+/**
+ * Levels
+ */
+var level = exports.level = {};
+
+///////////////////////
+// Level 1
+///////////////////////
+level[1] = {
+  load: function() {
+    var worldsize = [2000, 800],
+        spawn_at = [800, 700],
+        seed_at = [1000, 700],
+        world = {},
+        player = mob.factory(world, 'hero', {}, {position: spawn_at});
+
+    _.extend(world, create_partitions(worldsize), {
+      size: worldsize,
+      player: player,
+      trees: []
+    });
+
+    var monsters = _.keys(mob.roster);
+
+    world.entities.insert(player);
+
+    gamescreen.clear();
+    gamescreen.levelSize(worldsize);
+    gamescreen.moveTo(seed_at);
+    gamescreen.follow(player);
+
+    // Insert base platform
+    world.platforms.insert( new platforms.Platform(600, 1400, spawn_at[1], {fall_through: false}) );
+
+    world.entities.insert( mob.factory(world, 'toothface', {}, {position: [900, spawn_at[1] - 2]}) );
+
+
+    world.trees[0] = new tree.Tree(seed_at, {
+
+      // Called when a branch changes direction
+      onBranch: function() {
+
+        // Branched left or right
+        if (this.direction[1] == 0) {
+          this.platform = new platforms.Platform(this.position[0], this.position[0], this.position[1]); 
+          world.platforms.insert(this.platform);
+
+          if (this.pole) {
+            world.poles.mergeOverlapping(this.pole);
+            this.pole = null;
+          }
+
+
+        // Branched up or down
+        } else {
+          this.pole = new poles.Pole(this.position[1], this.position[1], this.position[0]); 
+          world.poles.insert(this.pole);
+
+          if (this.platform) {
+            world.platforms.mergeOverlapping(this.platform);
+            this.platform = null;
+          }
+        }
+      },
+
+      // Called when a branch is updated
+      onGrow: function(msDuration) {
+
+        // Platform growth 
+        if (this.platform && this.direction[1] == 0) {
+          // Growing right
+          if (this.direction[0] > 0) {
+            if (this.platform.right < this.position[0]) this.platform.right = this.position[0];
+
+          // Growing left
+          } else {
+            if (this.platform.left > this.position[0]) this.platform.left = this.position[0];
+          }
+
+          //
+          // Randomly spawn a monster
+          //
+          if (srand.random.range(1000) >= 995) {
+            var monster = monsters[ srand.random.range(monsters.length-1) ]; 
+            world.entities.insert( mob.factory(world, monster, {}, {position: [this.position[0], this.position[1]-2]}) );
+          } 
+        }
+
+        // Pole growth
+        if (this.pole && this.direction[0] == 0) {
+          // Growing right
+          if (this.direction[1] > 0) {
+            if (this.pole.bottom < this.position[1]) this.pole.bottom = this.position[1];
+
+          // Growing left
+          } else {
+            if (this.pole.top > this.position[1]) this.pole.top = this.position[1];
+          }
+
+          //
+          // Randomly spawn a monster
+          //
+        }
+        
+      }
+    });
+    
+    return world;
+  }
+}
