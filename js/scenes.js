@@ -9,7 +9,11 @@ var GameScene = exports.GameScene = function(game) {
   this.game = game;
   this.input_router = new input.Router();
 
-  var world = levels.level[1].load();
+  //var world = levels.level[1].load();
+  var level = levels.load('level1');
+console.log('Scene -- level == ');
+console.log(level);
+  var world = level.world;
 
   // Player
   world.player.controller = new input.Controller(world.player, mob.roster['hero'].keys, mob.roster['hero'].actions); 
