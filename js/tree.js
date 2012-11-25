@@ -7,11 +7,13 @@ var vectors = gamejs.utils.vectors;
 var Tree = exports.Tree = function(seed_position, settings) {
   this.leads = [];
   this.base = seed_position;
+  this.finished = false;
 
   this.settings = {
     onBend: function() {},
     onBranch: function() {},
-    onGrow: function() {}
+    onGrow: function() {},
+    onFinished: function() {}
   };
   _.extend(this.settings, settings);
 
@@ -28,15 +30,34 @@ var Tree = exports.Tree = function(seed_position, settings) {
 };
 
 Tree.prototype.update = function(msDuration) {
-  _.each(this.leads, function(lead) {
-    lead.update(msDuration);
-  });
+  if (this.finished) return false;
+
+  if (!this.leads.length) {
+    this.finished = true;
+    if (this.settings.onFinished && _.isFunction(this.settings.onFinished())) {
+      this.settings.onFinished.call(this);
+    }
+    return false;
+  }
+
+  var lead, dead = [];
+  for (var i=0, len=this.leads.length; i<len; ++i) {
+    lead = this.leads[i];
+
+    if (false === lead.update(msDuration)) {
+      dead.push(lead);
+    };
+  }
+
+  for (var i=0, len=dead.length; i<len; ++i) {
+    this.remove_lead(dead[i]);
+  }
 };
 
 Tree.prototype.draw = function(display) {
-  _.each(this.leads, function(lead) {
-    lead.draw(display);
-  });
+  for (var i=0, len=this.leads.length; i<len; ++i) {
+    this.leads[i].draw(display);
+  };
 };
 
 Tree.prototype.add_lead = function(settings) {
@@ -45,6 +66,13 @@ Tree.prototype.add_lead = function(settings) {
   if (this.settings.onBranch) {
     this.settings.onBranch.call(lead);
   }
+};
+
+Tree.prototype.remove_lead = function(lead) {
+  var i = _.indexOf(this.leads, lead);
+  if (-1 != i) {
+    this.leads.splice(i, 1);
+  } 
 };
 
 
@@ -186,7 +214,7 @@ Lead.prototype.has_arrived = function() {
 };
 
 Lead.prototype.update = function(msDuration) {
-  if (this.lifespan <= 0) return;
+  if (this.lifespan <= 0) return false;
 
   this.last_position = this.position.slice(0);
   this.position = vectors.round(vectors.add(this.position, vectors.multiply(this.velocity, msDuration)));
@@ -204,5 +232,13 @@ Lead.prototype.update = function(msDuration) {
 };
 
 Lead.prototype.draw = function(display) {
-  gamejs.draw.line(display, this.color, this.position, this.last_position, this.width);
+  // Moving vertically
+  if (this.direction[0] == 0) {
+    gamejs.draw.line(display, this.color, this.position, this.last_position, this.width);
+
+  // Moving horizontally
+  } else {
+    var dy = this.width * 0.5; 
+    gamejs.draw.line(display, this.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], this.width);
+  }
 };

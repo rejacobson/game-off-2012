@@ -23,7 +23,7 @@ var EntityManager = exports.EntityManager = function(mapsize, cellsize, options)
       return _size;
     },
 
-    entities: function() {
+    get: function() {
       return _.compact(_entities);
     },
 
@@ -56,6 +56,8 @@ var EntityManager = exports.EntityManager = function(mapsize, cellsize, options)
       _size--;
 
       delete entity._cell_index;
+
+      entity.alive = false;
     },
 
     // Reposition the entity within the spatial partition

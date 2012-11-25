@@ -31,6 +31,8 @@ var World = exports.World = function(worldsize) {
 var Level = exports.Level = function(settings) {
   var self = this;
 
+  this.testing_finished_state = false;
+
   this.settings = settings;
   this.world = new World(settings.worldsize);
   this.mobs = [];
@@ -59,6 +61,13 @@ var Level = exports.Level = function(settings) {
   gamescreen.levelSize(this.world.size);
   gamescreen.moveTo(this.world.player.position);
   gamescreen.follow(this.world.player);
+};
+
+Level.prototype.finished = function() {
+  if (!this.testing_finished_state) return false;
+  if (!this.world.player.alive) return 'lose';
+  if (this.world.entities.size() == 1 && this.world.entities.get()[0] == this.world.player) return 'win'; 
+  return false;
 };
 
 // Insert ground platforms
@@ -104,6 +113,10 @@ Level.prototype.plantTrees = function(seeds) {
         // Randomly spawn a monster
         //
         if (srand.random.range(1000) >= 995) {
+          // Begin testing for the end of the level
+          self.testing_finished_state = true;
+
+          // Spawn a monster
           var monster = self.mobs[ srand.random.range(self.mobs.length-1) ]; 
           self.world.entities.insert( mob.factory(self.world, monster, {}, {position: [this.position[0], this.position[1]-2]}) );
         } 
@@ -189,7 +202,6 @@ var plantTree = function(world, position, settings) {
         }
 
         if (rules.onGrowHorizontal) rules.onGrowHorizontal.call(this, this.platform, this.direction);
-
       }
 
       // Pole growth
@@ -204,10 +216,6 @@ var plantTree = function(world, position, settings) {
         }
 
         if (rules.onGrowVertical) rules.onGrowVertical.call(this, this.pole, this.direction);
-
-        //
-        // Randomly spawn a monster
-        //
       }
       
     }

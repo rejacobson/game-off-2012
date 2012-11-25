@@ -22,6 +22,8 @@ console.log(level);
 
   collider = new collision.Resolver(world.entities);
 
+  var status;
+
   /////////////////////////
   // Update
   /////////////////////////
@@ -38,6 +40,11 @@ console.log(level);
     for (var i = 0, len = world.trees.length; i<len; ++i) {
       world.trees[i].update(msDuration);
     };
+
+    if (status = level.finished()) {
+console.log(status); 
+$(document).trigger('pause');
+    }
   }
   
   /////////////////////////

@@ -39,6 +39,8 @@ var Creature = exports.Creature = function(world, name, stats, settings) {
 
   this.id = NextId(); 
 
+  this.alive = true;
+
   this.world = world;
  
   this.name = name; 
