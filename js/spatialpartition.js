@@ -104,6 +104,9 @@ Grid.prototype.mapIndex = function(position) {
       
   var index = (y * this.cellcount[0]) + x;
 
+  // Return null if the position is out of bounds
+  if (index < 0 || index > this.max) return null;
+
   return index;
 };
 

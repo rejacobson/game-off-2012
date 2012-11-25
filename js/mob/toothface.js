@@ -17,7 +17,7 @@ exports.settings = function() {
 
         // Facing the entity
         if (this.lookingAt(entity)) {
-          entity.pushedOff();
+          entity.pushedOff(this);
         }
       }
     }

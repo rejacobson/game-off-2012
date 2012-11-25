@@ -7,10 +7,12 @@ var gamescreen = require('gamescreen').instance();
 var tree = require('tree');
 var mob = require('mob');
 
+// Load a new level
 exports.load = function(level) {
   return new Level(levels[level]); 
 };
 
+//
 var World = exports.World = function(worldsize) {
   var world = {};
 
@@ -25,6 +27,7 @@ var World = exports.World = function(worldsize) {
   });
 };
 
+//
 var Level = exports.Level = function(settings) {
   var self = this;
 
@@ -122,7 +125,7 @@ levels['level1'] = {
     'buggaloo': 15,
     'bunny': 15,
     'gazer': 5
-  }
+  },
 };
 
 

@@ -25,7 +25,7 @@ exports.settings = function() {
 
           case 'running':
             if (this.facing == entity.facing && this.lookingAt(entity)) {
-              entity.pushedOff();
+              entity.pushedOff(this);
             }
             break;
         };
@@ -121,13 +121,13 @@ exports.actions = {
   move_up: function(msDuration){
     if (this.pole) {
       this.position[1] -= 75 * msDuration;
+      this.state = 'climbing';
     } else {    
       this.pole = this.world.poles.findClosest(this.hitbox); 
       if (this.pole) {
         this.platform = null;
         this.velocity = [0, 0];
         this.on_ground = false;
-        this.state = 'climbing';
       }
     }
   },
@@ -135,11 +135,11 @@ exports.actions = {
   move_down: function(msDuration){
     if (this.pole) {
       this.position[1] += 90 * msDuration;
+      this.state = 'climbing';
     } else if (this.on_ground && this.platform && this.platform.settings.fall_through == true) {
       this.position[entity.Y] += 1;
       this.on_ground = false;
       this.platform = null;
-      this.state = 'climbing';
     }
   },
 

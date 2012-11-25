@@ -2,8 +2,6 @@ var gamejs = require('gamejs');
 var scenes = require('scenes');
 var srand = require('srand');
 
-srand.seed(12345);
-
 var requestAnimationFrame = (function(){
   //Check for each browser
   //@paul_irish function

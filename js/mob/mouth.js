@@ -12,6 +12,9 @@ exports.settings = function() {
     position: [300, 450],
     hitbox: new gamejs.Rect([0, 0], [44, 36]),
     collision: function(entity) {
+      if (entity.state == 'running') {
+        this.pushedOff(entity);  
+      }
     }
   };
 

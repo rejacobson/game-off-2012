@@ -7,9 +7,9 @@ var PoleManager = exports.PoleManager = function(width, cellwidth) {
 PoleManager.prototype = Object.create(spatialpartition.Grid.prototype);
 
 PoleManager.prototype.insert = function(pole) {
-  var index = this.mapIndex([pole.left, 1]),
+  var index = this.mapIndex([pole.left, 0]),
       poles = this.mapFetch(index, []);
-      
+
   poles.push(pole);
   
   if (poles.length > 1) {
@@ -23,7 +23,7 @@ PoleManager.prototype.findClosest = function(rect) {
   var x = rect.center[0];
   if (x > this.mapsize[0]) return false;
   
-  var index = this.mapIndex([x, 1]);
+  var index = this.mapIndex([x, 0]);
   var poles = _.compact(this.mapFetch([index-1, index, index+1]));
   
   if (poles.length) {
@@ -43,7 +43,7 @@ PoleManager.prototype.findClosest = function(rect) {
 
 PoleManager.prototype.mergeOverlapping = function(pole) {
   var self = this,
-      index = this.mapIndex([pole.left, 1]),
+      index = this.mapIndex([pole.left, 0]),
       poles = this.mapFetch(index);
       
   poles = _.without(poles, pole);

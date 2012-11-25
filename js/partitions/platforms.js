@@ -7,7 +7,7 @@ var PlatformManager = exports.PlatformManager = function(height, cellheight) {
 PlatformManager.prototype = Object.create(spatialpartition.Grid.prototype);
 
 PlatformManager.prototype.insert = function(platform) {
-  var index = this.mapIndex([1, platform.top]),
+  var index = this.mapIndex([0, platform.top]),
       platforms = this.mapFetch(index, []);
       
   platforms.push(platform);
@@ -22,7 +22,7 @@ PlatformManager.prototype.insert = function(platform) {
 PlatformManager.prototype.findClosest = function(position) {
   if (position[1] > this.mapsize[1]) return false;
   
-  var index = this.mapIndex([1, position[1]]);
+  var index = this.mapIndex([0, position[1]]);
   var platforms = _.compact(this.mapFetch([index, index+1]));
   
   if (platforms.length) {
@@ -37,7 +37,7 @@ PlatformManager.prototype.findClosest = function(position) {
 
 PlatformManager.prototype.mergeOverlapping = function(platform) {
   var self = this,
-      index = this.mapIndex([1, platform.top]),
+      index = this.mapIndex([0, platform.top]),
       platforms = this.mapFetch(index);
       
   platforms = _.without(platforms, platform);
