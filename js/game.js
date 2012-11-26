@@ -59,6 +59,7 @@ function onVisibilityChange(hidden_callback, visible_callback) {
 
 var Director = exports.Director = function() {
   var activeScene = null,
+      scenes = [],
       t,
       last_t,
       msDuration,
@@ -110,18 +111,19 @@ var Director = exports.Director = function() {
     if (activeScene.draw) activeScene.draw();
   }
 
-  this.start = function(scene) {
-    this.replaceScene(scene);
-    return;
+  this.getScene = function() {
+    return activeScene;
   };
 
-  this.replaceScene = function(scene) {
-    if (activeScene && activeScene.destroy) activeScene.destroy(); 
+  this.pushScene = function(scene) {
+    scenes.push(scene);
     activeScene = scene;
   };
 
-  this.getScene = function() {
-    return activeScene;
+  this.popScene = function() {
+    var s = scenes.pop();
+    if (s.destroy) s.destroy();
+    activeScene = scenes[scenes.length-1];
   };
   
   //gamejs.time.fpsCallback(tick, this, 60);
@@ -136,13 +138,10 @@ exports.init = function() {
 }
 
 var Game = exports.Game = function() {
-  this.director = null;
-  this.player = null;
+  this.director = new Director();
 
-  this.start = function(){
-    this.director = new Director();
-    this.game_scene = new scenes.GameScene(this);
-    this.director.start(this.game_scene);
-    //this.playLevel(levels.drycircuit, false, true);
+  this.start = function(level){
+    if (!level) level = new scenes.SplashScene();
+    this.director.pushScene(level);
   };
 };

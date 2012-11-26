@@ -4,15 +4,12 @@ var gamescreen = require('gamescreen').instance();
 var input = require('input');
 var collision = require('collision');
 var mob = require('mob');
+var tree = require('tree');
 
-var GameScene = exports.GameScene = function(game) {
-  this.game = game;
+var GameScene = exports.GameScene = function(level) {
   this.input_router = new input.Router();
 
-  //var world = levels.level[1].load();
-  var level = levels.load('level1');
-console.log('Scene -- level == ');
-console.log(level);
+  var level = levels.load(level);
   var world = level.world;
 
   // Player
@@ -70,3 +67,36 @@ $(document).trigger('pause');
   this.destroy = function() {}
 };
 
+
+
+var SplashScene = exports.SplashScene = function() {
+  var worldsize = [1200, 2000],
+      seed_at = [600, 1900],
+      trunk;
+
+  gamescreen.levelSize(worldsize);
+
+  var seed = function() {
+    trunk = new tree.Tree(seed_at.slice(0));
+    gamescreen.display('background').clear();
+    gamescreen.clear();
+    gamescreen.moveTo(trunk.leads[0].position);
+    gamescreen.follow(trunk.leads[0]);
+  }
+  
+  seed();
+
+  this.update = function(msDuration) {
+    gamescreen.update(msDuration);
+    trunk.update(msDuration);
+
+    if (trunk.finished) {
+      seed();
+    }
+  }
+
+  this.draw = function() {
+    trunk.draw(gamescreen.display('background'));
+  };
+
+};

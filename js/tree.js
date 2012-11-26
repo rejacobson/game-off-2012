@@ -98,6 +98,8 @@ var Lead = function(tree, settings) {
   }
   _.extend(this, defaults, settings);
 
+  this.last_position = this.position.slice(0);
+
   this.heading(settings.direction);
 };
 
@@ -115,7 +117,7 @@ Lead.prototype.sprout_percentage = function() {
 Lead.prototype.sprout = function(settings) {
   var forced_settings = {
     generation: this.generation + 1,
-    width: Math.round(this.width / 2)
+    width: Math.floor(this.width / 2)
   };
   _.extend(settings, forced_settings);
   this.tree.add_lead(settings);  
@@ -168,6 +170,28 @@ Lead.prototype.grow = function() {
   this.position = this.destination.slice(0);
   this.heading(new_direction);
 
+  ////////////////////////////////////
+  //
+  // Smooth out the direction changes
+  //
+  // Moving up or down
+  if (turning && new_direction[0] == 0) {
+    this.last_position[0] = this.position[0];
+    if (new_direction[1] < 0) this.last_position[1] = Math.ceil(this.position[1] + this.width);
+
+  // Moving left or right
+  } else if (turning && new_direction[1] == 0) {
+    this.last_position[1] = this.position[1];
+    //this.last_position[0] = this.position[0] - Math.floor(this.width / 2);
+
+    if (new_direction[0] < 0) {
+      this.last_position[0] = this.position[0] - Math.floor(this.width * 0.5);
+    } else {
+      this.last_position[0] = this.position[0] + Math.floor(this.width * 0.5);
+    }
+  }
+  ////////////////////////////////////
+
   if (turning && this.tree.settings.onBranch) {
     this.tree.settings.onBranch.call(this);
   }
@@ -176,11 +200,13 @@ Lead.prototype.grow = function() {
     sprout_directions = _.without(sprout_directions, this.direction); //_.reject(sprout_directions, function(d) { d == this.direction });
     var dir = sprout_directions[srand.random.range(sprout_directions.length-1)];
     var dest = vectors.add(this.position, vectors.multiply(dir, this.step));
+    var sprout_pos = this.position.slice(0);
+    var sprout_last_pos = dir[1] < 0 ? vectors.add(sprout_pos, [0, this.width]) : sprout_pos.slice(0);
 
     if (this.in_bounds(dest)) {
       this.sprout({
-        position: this.position.slice(0),
-        last_position: this.position.slice(0),
+        position: sprout_pos,
+        last_position: sprout_last_pos,
         direction: dir,
         trend: dir,
         lifespan: 8,
@@ -218,10 +244,14 @@ Lead.prototype.update = function(msDuration) {
 
   this.last_position = this.position.slice(0);
   this.position = vectors.round(vectors.add(this.position, vectors.multiply(this.velocity, msDuration)));
+  this.position[0] = Math.round(this.position[0]);
+  this.position[1] = Math.round(this.position[1]);
+
 
   if (this.tree.settings.onGrow) this.tree.settings.onGrow.call(this, msDuration);
 
   if (this.has_arrived()) {
+    this.position = this.destination.slice(0);
     if (!this.in_bounds(this.position)) this.lifespan = 0;
     if (this.momentum > 0) this.momentum--;
     if (this.lifespan > 0) {
@@ -231,6 +261,7 @@ Lead.prototype.update = function(msDuration) {
   }
 };
 
+var rect = new gamejs.Rect([0, 0]);
 Lead.prototype.draw = function(display) {
   // Moving vertically
   if (this.direction[0] == 0) {
@@ -238,7 +269,18 @@ Lead.prototype.draw = function(display) {
 
   // Moving horizontally
   } else {
-    var dy = this.width * 0.5; 
-    gamejs.draw.line(display, this.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], this.width);
+    var w = this.width,
+        dy = this.width;
+
+    if (w %2 == 0) w += 1;
+    dy = Math.floor(w * 0.5); 
+
+    gamejs.draw.line(display, this.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], w);
+/*
+    rect.topleft = this.position;
+    rect.width = this.position[0] - this.last_position[0]; 
+    rect.height = this.width;
+    gamejs.draw.rect(display, this.color, rect); 
+*/
   }
 };

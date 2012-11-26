@@ -13,7 +13,7 @@
     #gjs-loader {
       width: 50%;
       height: 50%;
-      background: url('/images/ajax-loader.gif');
+      background: transparent url('/images/ajax-loader.gif') no-repeat center center;
     }
 
     #viewport {
@@ -21,6 +21,24 @@
     }
     canvas#background {
       background-color: #000;
+    }
+
+    #gui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      margin: 40px 0;
+      color: #EEE;
+      z-index: 100;
+    }
+
+    #gui .dialog {
+      display: none;
+      padding: 10px;
+      width: 800px;
+      margin: 0 auto;
+      background-color: rgba(100, 100, 100, 0.3);
     }
   </style>
   <script type="text/javascript" src="/public/jquery.min.js"></script>
@@ -43,6 +61,68 @@
       <canvas id="foreground"></canvas>
     </div>
     <canvas id="hud"></canvas>
+
+    <div id="gui">
+      <div id="splash" class="dialog">
+        <h1>Get Out of My Tree!</h1>
+
+        <a class="btnLevels" href="javascript:void(0);">Play</a>
+        <a class="btnInstructions" href="javascript:void(0);">Instructions</a>
+      </div>
+
+      <div id="levels" class="dialog">
+        <h1>Select a Level</h1>
+
+        <h3>Summer</h3>
+          <a id="level1" class="level" href="javascript:void(0);">1</a>
+          <a id="level2" class="level" href="javascript:void(0);">2</a>
+          <a id="level3" class="level" href="javascript:void(0);">3</a>
+          <a id="level4" class="level" href="javascript:void(0);">4</a>
+
+        <h3>Autumn</h3>
+          <a id="level5" class="level" href="javascript:void(0);">5</a>
+          <a id="level6" class="level" href="javascript:void(0);">6</a>
+          <a id="level7" class="level" href="javascript:void(0);">7</a>
+          <a id="level8" class="level" href="javascript:void(0);">8</a>
+
+        <h3>Winter</h3>
+          <a id="level9" class="level" href="javascript:void(0);">9</a>
+          <a id="level10" class="level" href="javascript:void(0);">10</a>
+          <a id="level11" class="level" href="javascript:void(0);">11</a>
+          <a id="level12" class="level" href="javascript:void(0);">12</a>
+
+        <h3>Spring</h3>
+          <a id="level13" class="level" href="javascript:void(0);">13</a>
+          <a id="level14" class="level" href="javascript:void(0);">14</a>
+          <a id="level15" class="level" href="javascript:void(0);">15</a>
+          <a id="level16" class="level" href="javascript:void(0);">16</a>
+
+        <a class="btnSplash" href="javascript:void(0);">Back</a>
+      </div>
+
+      <div id="instructions" class="dialog">
+        <h1>How to Play</h1>
+
+        <p>In non malesuada lorem. Nam tempus malesuada arcu vel congue. Aenean cursus tincidunt sem at sollicitudin. Aliquam ac lectus sit amet purus posuere bibendum eget in purus. Aenean pharetra libero et ipsum scelerisque tristique. Sed ut nulla ac mi rhoncus laoreet. Vivamus erat leo, sagittis vel malesuada congue, semper id tellus. Nullam pharetra enim et lorem lacinia varius. </p>
+
+        <a class="btnSplash" href="javascript:void(0);">Back</a>
+      </div>
+
+      <div id="win" class="dialog">
+        <h1>Level Complete</h1>
+        
+        <a class="btnNextLevel" href="javascript:void(0);">Next</a>
+        <a class="btnLevels" href="javascript:void(0);">Select a Level</a>
+      </div>
+
+      <div id="lose" class="dialog">
+        <h1>You Lose!</h1>
+        
+        <a class="btnTryAgain" href="javascript:void(0);">Try Again</a>
+        <a class="btnLevels" href="javascript:void(0);">Select a Level</a>
+      </div>
+
+    </div>
   </div>
 
 </body>
