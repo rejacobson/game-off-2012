@@ -5,11 +5,14 @@ var input = require('input');
 var collision = require('collision');
 var mob = require('mob');
 var tree = require('tree');
+var dialog = require('dialog');
 
-var GameScene = exports.GameScene = function(level) {
+var GameScene = exports.GameScene = function(game, level) {
+  this.game = game;
+  this.level = level;
   this.input_router = new input.Router();
 
-  var level = levels.load(level);
+  var level = levels.load('level'+ level);
   var world = level.world;
 
   // Player
@@ -39,8 +42,23 @@ var GameScene = exports.GameScene = function(level) {
     };
 
     if (status = level.finished()) {
-console.log(status); 
-$(document).trigger('pause');
+      $(document).trigger('pause');
+      var self = this;
+      switch (status) {
+        case 'win':
+          dialog.show('win', {btnNext: function(){
+            var scene = new GameScene(self.game, self.level+1);
+            self.game.stop();
+            self.game.start(scene); 
+          }});
+          break;
+
+        case 'lose':
+          dialog.show('lose', {btnTryAgain: function(){
+console.log('Trying again!'); 
+          }});
+          break;
+      }
     }
   }
   
@@ -64,7 +82,8 @@ $(document).trigger('pause');
     //gamescreen.draw(gamescreen.display('main'));
   }
   
-  this.destroy = function() {}
+  this.destroy = function() {
+  }
 };
 
 

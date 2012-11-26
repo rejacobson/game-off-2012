@@ -140,8 +140,12 @@ exports.init = function() {
 var Game = exports.Game = function() {
   this.director = new Director();
 
-  this.start = function(level){
-    if (!level) level = new scenes.SplashScene();
-    this.director.pushScene(level);
+  this.start = function(scene){
+    if (!scene) scene = new scenes.SplashScene();
+    this.director.pushScene(scene);
+  };
+
+  this.stop = function() {
+    this.director.popScene(); 
   };
 };

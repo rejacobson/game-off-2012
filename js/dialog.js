@@ -1,47 +1,58 @@
 var scenes = require('scenes');
 
-var _game;
+var _game, _callbacks = {};
 
 exports.init = function(game) {
   _game = game;
 };
 
-var show = exports.show = function(id) {
+var show = exports.show = function(name, callbacks) {
+  var dialog = $('#'+ name);
+
+  if (!dialog.length) return;
+
   hide();
-  return $('#'+ id).show();
+
+  if (callbacks) {
+    _callbacks[name] = callbacks;
+  }
+
+  return dialog.show();
 };
 
 var hide = exports.hide = function() {
-  $('#gui .dialog').hide();
+  $('#gui .dialog').each(function(){
+    var dialog = $(this),
+        id = dialog.attr('id');
+
+    if (_callbacks[id]) delete _callbacks[id];
+
+    dialog.hide();
+  });
 };
 
 
 // Setup the dialog behaviours
 $(document).ready(function(){
-console.log('Creating button behaviours');
 
-  // Splash Screen button 
-  $('.btnSplash').click(function(){
-    show('splash');
-    return false;
-  });
-  
-  // Instructions Screen button 
-  $('.btnInstructions').click(function(){
-    show('instructions');
-    return false;
-  });
-  
-  // Level Select button
-  $('.btnLevels').click(function(){
-    show('levels');
-    return false;
-  });
+  $('#gui .btn').click(function(){
+    var current = $(this).closest('.dialog').attr('id'),
+        name = $(this).attr('class').match(/btn(\w+)/)[1],
+        id = 'btn'+ name, 
+        dialog_to_open = name.toLowerCase();
+
+    if (_callbacks[current] && _callbacks[current][id] && _.isFunction(_callbacks[current][id])) {
+      _callbacks[current][id].call(this);
+      delete _callbacks[current]; 
+    }
+
+    show(dialog_to_open);
+  }); 
 
   // Level buttons
   $('#levels a.level').click(function(){
-    var level = $(this).attr('id'),
-        scene = new scenes.GameScene(level);
+    var level = parseInt($(this).attr('id').replace('level', '')),
+        scene = new scenes.GameScene(_game, level);
     hide();
     _game.start(scene);
   });
