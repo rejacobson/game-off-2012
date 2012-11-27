@@ -1,3 +1,5 @@
+var dialog = require('dialog');
+
 function supports_html5_storage() {
   try {
     return 'localStorage' in window && window['localStorage'] !== null;
@@ -28,7 +30,7 @@ var getLevel = exports.getLevel = function(level) {
   return data;
 };
 
-var setLevel = exports.setLevel = function(level, data) {
+var saveLevel = exports.saveLevel = function(level, data) {
   var existing = getLevel(level);
 
   data = _.pick(data, _.keys(_default));
@@ -38,9 +40,14 @@ var setLevel = exports.setLevel = function(level, data) {
   data = JSON.stringify(data);
 
   localStorage.setItem('levels.'+ level, data);
+
+  dialog.populateLevelButton(level, data);
 };
 
+var unlockLevel = exports.unlockLevel = function(level) {
+  saveLevel(level, {locked: ''});
+};
 
 if (getLevel(1).locked == 'locked') {
-  setLevel(1, {locked: ''});
+  unlockLevel(1);
 }

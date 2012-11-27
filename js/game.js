@@ -1,4 +1,5 @@
 var gamejs = require('gamejs');
+var gamescreen = require('gamescreen').instance();
 var scenes = require('scenes');
 var srand = require('srand');
 
@@ -92,6 +93,7 @@ var Director = exports.Director = function() {
 
   onVisibilityChange(pause, unpause);
   $(document).on('pause', pause);
+  $(document).on('unpause', unpause);
 
   function tick_logic(msDuration){
     if (activeScene.handleEvent) {
@@ -121,9 +123,18 @@ var Director = exports.Director = function() {
   };
 
   this.popScene = function() {
+console.log('Popping scene');
+console.log(scenes);
     var s = scenes.pop();
+console.log('POP');
+console.log(s);
+console.log(scenes);
     if (s.destroy) s.destroy();
     activeScene = scenes[scenes.length-1];
+
+    if (activeScene.wakeup) activeScene.wakeup();
+console.log('active scene == ');
+console.log(activeScene);
   };
   
   //gamejs.time.fpsCallback(tick, this, 60);
@@ -147,5 +158,7 @@ var Game = exports.Game = function() {
 
   this.stop = function() {
     this.director.popScene(); 
+    gamescreen.clear();
+    $(document).trigger('unpause');
   };
 };

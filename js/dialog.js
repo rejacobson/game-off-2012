@@ -32,6 +32,17 @@ var hide = exports.hide = function() {
   });
 };
 
+var levelButtonTemplate = (function(){
+  var source = $("#level-button-template").html(),
+      template = Handlebars.compile(source);
+  
+  return template; 
+})();
+
+var populateLevelButton = exports.populateLevelButton = function(level) {
+  var context = storage.getLevel(level), html = levelButtonTemplate(context); 
+  $('#level-'+ level).html(html); 
+}
 
 // Setup the dialog behaviours
 $(document).ready(function(){
@@ -56,16 +67,18 @@ $(document).ready(function(){
       context, html; 
   
   for (var i=1; i<=16; ++i) {
-    context = storage.getLevel(i); 
-    html = template(context);
-    $('#level-'+ i).html(html); 
+    populateLevelButton(i);
   }
 
   // Level buttons
   $('#levels .levelButton').click(function(){
+    if ($(this).find('.level').hasClass('locked')) return;
+
     var level = parseInt($(this).attr('id').replace('level-', '')),
         scene = new scenes.GameScene(_game, level);
+
     hide();
+
     _game.start(scene);
   });
 

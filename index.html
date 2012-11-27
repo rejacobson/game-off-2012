@@ -15,9 +15,12 @@
 <script type="text/javascript" src="/public/yabble.js"></script>
 <script type="text/javascript" src="/public/gamejs.min.js"></script>
 
-<script>
-    require.setModuleRoot('./js/');
+<script type="text/javascript">
+  require.setModuleRoot('./js/');
+
+  $(document).ready(function(){
     require.run('main')
+  });
 </script>
 
 <script type="text/x-handlebars-template" id="level-button-template">

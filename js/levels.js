@@ -9,6 +9,8 @@ var mob = require('mob');
 
 // Load a new level
 exports.load = function(level) {
+console.log('Loading leve: '+level);
+console.log(levels[level]);
   return new Level(levels[level]); 
 };
 
@@ -64,8 +66,8 @@ var Level = exports.Level = function(settings) {
 };
 
 Level.prototype.finished = function() {
-  if (!this.testing_finished_state) return false;
   if (!this.world.player.alive) return 'lose';
+  if (!this.testing_finished_state) return false;
   if (this.world.entities.size() == 1 && this.world.entities.get()[0] == this.world.player) return 'win'; 
   return false;
 };
@@ -140,9 +142,20 @@ levels['level1'] = {
     'buggaloo': 15,
     'bunny': 15,
     'gazer': 5
-  },
+  }
 };
 
+levels['level2'] = {
+  worldsize: [2000, 800],
+  spawn: [800, 700],
+  ground: [[600, 1400, 700]],  // First one is always the spawn point
+  seeds: [[1400, 700]],
+  mobs: {
+    'spiky': 15,
+    'snake': 15,
+    'mouth': 5
+  }
+};
 
 
 

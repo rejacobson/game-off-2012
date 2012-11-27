@@ -33,7 +33,7 @@ function endOfGameTally(level, player, ms_start, ms_end) {
 
     points_new_record: score.points > level_data.points,
     multiplier_new_record: score.multiplier > level_data.multiplier,
-    time_new_record: time.total > level_data.time
+    time_new_record: time.total < level_data.time
   };
 };
 
@@ -48,8 +48,17 @@ function scoreCard(level, player, ms_start, ms_end) {
   return score;
 };
 
+// Only save the better scores
+function saveScoreCard(level, score) {
+  if (!score.points_new_record) delete score.points;
+  if (!score.multilplier_new_record) delete score.multiplier;
+  if (!score.time_new_record) delete score.time;
+  storage.saveLevel(level, score);
+};
 
 var GameScene = exports.GameScene = function(game, level_number) {
+  dialog.hide();
+
   var input_router = new input.Router();
   var level = levels.load('level'+ level_number);
   var world = level.world;
@@ -87,22 +96,38 @@ var GameScene = exports.GameScene = function(game, level_number) {
       var self = this;
       switch (status) {
         case 'win':
-          var end_time = Date.now(),
-              score = scoreCard(level_number, world.player, start_time, end_time);
+          var score = scoreCard(level_number, world.player, start_time, Date.now()),
+              next_level_number = level_number + 1;
 
-          storage.setLevel(level_number, score);
+          // Save the score for this level
+          saveScoreCard(level_number, score);
+          
+          // Unlock the next level
+          storage.unlockLevel(next_level_number);
 
-          dialog.show('win', {btnNext: function(){
-            var scene = new GameScene(game, self.level+1);
-            game.stop();
-            game.start(scene); 
-          }});
+          dialog.show('win', {
+            btnNextLevel: function(){
+              game.stop();
+              var scene = new GameScene(game, next_level_number);
+              game.start(scene); 
+            }, 
+            btnLevels: function() {
+              game.stop(); 
+            } 
+          });
           break;
 
         case 'lose':
-          dialog.show('lose', {btnTryAgain: function(){
-console.log('Trying again!'); 
-          }});
+          dialog.show('lose', {
+            btnTryAgain: function(){
+              game.stop();
+              game.start(level_number);
+            },
+
+            btnLevels: function() {
+              game.stop();
+            }
+          });
           break;
       }
     }
@@ -137,19 +162,15 @@ console.log('Trying again!');
 var SplashScene = exports.SplashScene = function() {
   var worldsize = [1200, 2000],
       seed_at = [600, 1900],
-      trunk;
+      trunk,
+      self = this;
 
-  gamescreen.levelSize(worldsize);
-
-  var seed = function() {
-    trunk = new tree.Tree(seed_at.slice(0));
-    gamescreen.display('background').clear();
+  this.wakeup = function() {
     gamescreen.clear();
+    gamescreen.levelSize(worldsize); 
     gamescreen.moveTo(trunk.leads[0].position);
     gamescreen.follow(trunk.leads[0]);
   }
-  
-  seed();
 
   this.update = function(msDuration) {
     gamescreen.update(msDuration);
@@ -162,6 +183,12 @@ var SplashScene = exports.SplashScene = function() {
 
   this.draw = function() {
     trunk.draw(gamescreen.display('background'));
-  };
+  }
 
+  function seed() {
+    trunk = new tree.Tree(seed_at.slice(0));
+    self.wakeup();
+  }
+
+  seed();
 };
