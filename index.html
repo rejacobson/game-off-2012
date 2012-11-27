@@ -1,150 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Get Out of My Tree</title>
-  <style type=text/css>
-    body{
-      background:#fff;
-      color:#222;
-      margin:1em 0 2em 6em;
-      padding:0;
-      font-family: Arial, sans-serif;
-    }
-    #gjs-loader {
-      width: 50%;
-      height: 50%;
-      background: transparent url('/images/ajax-loader.gif') no-repeat center center;
-    }
 
-    #viewport {
-      border: 1px solid black;
-    }
-    canvas#background {
-      background-color: #000;
-    }
+<meta charset="UTF-8" />
 
-    #gui {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      margin: 40px 0;
-      color: #EEE;
-      z-index: 100;
-    }
+<title>Get Out of My Tree</title>
 
-    #gui .dialog {
-      display: none;
-      padding: 10px;
-      width: 800px;
-      margin: 0 auto;
-      background-color: rgba(100, 100, 100, 0.3);
-    }
+<link rel="stylesheet" type="text/css" href="/css/style.css" />
+<link rel="stylesheet" type="text/css" href="/css/dialog.css" />
 
-    h1 { margin: 0; }
+<script type="text/javascript" src="/public/jquery.min.js"></script>
+<script type="text/javascript" src="/public/underscore-min.js"></script>
+<script type="text/javascript" src="/public/handlebars.js"></script>
+<script type="text/javascript" src="/public/yabble.js"></script>
+<script type="text/javascript" src="/public/gamejs.min.js"></script>
 
-    h3 {
-      margin: 20px 0 0 0;
-    }
+<script>
+    require.setModuleRoot('./js/');
+    require.run('main')
+</script>
 
-    div.levelButton { 
-      float: left;
-    }
+<script type="text/x-handlebars-template" id="level-button-template">
+  <div class="level {{locked}}">
+    <h1>{{level}}</h1>
 
-    div.levelButton .level {
-      position: relative;
-      background-color: #828259;
-      color: #4E2D21;
-      width: 165px;
-      height: 50px;
-      margin-right: 10px;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-
-    div.levelButton .level h1 {
-      margin: 6px;
-    }
-
-    div.levelButton .level span {
-      position: absolute;
-    }
-
-    div.levelButton .level .meta {
-
-    }
-
-    div.levelButton .level span.points {
-      top: 2px;
-      right: 8px;
-    }
-
-    div.levelButton .level span.multiplier {
-      top: 20px;
-      right: 8px;
-    }
-
-    div.levelButton .level span.time {
-      bottom: 2px;
-      right: 8px;
-    }
-    
-
-    div.levelButton .level.locked {
-      background: #40402C url('/images/locked.png') no-repeat center center;
-    }
-    
-    div.levelButton .level.locked h1,
-    div.levelButton .level.locked meta {
-      display: none;
-    }
-
-    br.clear { clear:both; }
-
-
-    #hud-overlay {
-      z-index: 4;
-      position: absolute;
-      left: 0:
-      top: 0;
-      color: #D92332;
-    }
-
-    #points {
-      padding: 10px;
-    }
-  </style>
-  <script type="text/javascript" src="/public/jquery.min.js"></script>
-  <script type="text/javascript" src="/public/underscore-min.js"></script>
-  <script type="text/javascript" src="/public/handlebars.js"></script>
-  <script type="text/javascript" src="/public/yabble.js"></script>
-  <script type="text/javascript" src="/public/gamejs.min.js"></script>
-  <script>
-      require.setModuleRoot('./js/');
-      require.run('main')
-  </script>
-
-  <script type="text/x-handlebars-template" id="level-button-template">
-    <div class="level {{locked}}">
-      <h1>{{level}}</h1>
-
-      {{#unless locked}}
-      {{#if points}}
-      <div class="meta">
-        <span class="points">{{points}}</span>
-        <span class="multiplier">x{{multiplier}}</span>
-        <span class="time">{{time}}</span>
-      </div>
-      {{/if}}
-      {{/unless}}
+    {{#unless locked}}
+    {{#if points}}
+    <div class="meta">
+      <span class="points">{{points}}</span>
+      <span class="multiplier">x{{multiplier}}</span>
+      <span class="time">{{time}}</span>
     </div>
-  </script>
+    {{/if}}
+    {{/unless}}
+  </div>
+</script>
+
+<script type="text/x-handlebars-template" id="level-debrief">
+  <table>
+  <tr>
+    <td>Points</td>
+    <td>{{points}}</td>
+    <td>{{points_record}}</td>
+  </tr>
+  <tr>
+    <td>Time</td>
+    <td>{{time}}</td>
+    <td>{{time_record}}</td>
+  </tr>
+  <tr>
+    <td>Multiplier</td>
+    <td>{{multiplier}}</td>
+    <td>{{multiplier_record}}</td>
+  </tr>
+  </table>
+</script>
 
 </head>
 <body>
-
-  <div id="gjs-loader">Loading...</div>
 
   <div id="viewport">
     <div id="layers">
@@ -161,8 +74,10 @@
       <div id="splash" class="dialog">
         <h1>Get Out of My Tree!</h1>
 
-        <a class="btn btnLevels" href="javascript:void(0);">Play</a>
-        <a class="btn btnInstructions" href="javascript:void(0);">Instructions</a>
+        <div class="buttons">
+          <a class="btn btnLevels" href="javascript:void(0);">Play</a>
+          <a class="btn btnInstructions" href="javascript:void(0);">Instructions</a>
+        </div>
       </div>
 
       <div id="levels" class="dialog">
@@ -195,7 +110,9 @@
           <div id="level-15" class="levelButton"></div>
           <div id="level-16" class="levelButton"></div>
 
-        <a class="btn btnSplash" href="javascript:void(0);">Back</a>
+        <div class="buttons">
+          <a class="btn btnSplash" href="javascript:void(0);">Back</a>
+        </div>
       </div>
 
       <div id="instructions" class="dialog">
@@ -203,21 +120,29 @@
 
         <p>In non malesuada lorem. Nam tempus malesuada arcu vel congue. Aenean cursus tincidunt sem at sollicitudin. Aliquam ac lectus sit amet purus posuere bibendum eget in purus. Aenean pharetra libero et ipsum scelerisque tristique. Sed ut nulla ac mi rhoncus laoreet. Vivamus erat leo, sagittis vel malesuada congue, semper id tellus. Nullam pharetra enim et lorem lacinia varius. </p>
 
-        <a class="btn btnSplash" href="javascript:void(0);">Back</a>
+        <div class="buttons">
+          <a class="btn btnSplash" href="javascript:void(0);">Back</a>
+        </div>
       </div>
 
       <div id="win" class="dialog">
         <h1>Level Complete</h1>
-        
-        <a class="btn btnNextLevel" href="javascript:void(0);">Next</a>
-        <a class="btn btnLevels" href="javascript:void(0);">Select a Level</a>
+
+        <div id="debrief"></div>
+ 
+        <div class="buttons">
+          <a class="btn btnNextLevel" href="javascript:void(0);">Next</a>
+          <a class="btn btnLevels" href="javascript:void(0);">Select a Level</a>
+        </div>
       </div>
 
       <div id="lose" class="dialog">
         <h1>You Lose!</h1>
         
-        <a class="btn btnTryAgain" href="javascript:void(0);">Try Again</a>
-        <a class="btn btnLevels" href="javascript:void(0);">Select a Level</a>
+        <div class="buttons">
+          <a class="btn btnTryAgain" href="javascript:void(0);">Try Again</a>
+          <a class="btn btnLevels" href="javascript:void(0);">Select a Level</a>
+        </div>
       </div>
 
     </div>

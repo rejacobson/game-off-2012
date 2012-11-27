@@ -1,0 +1,91 @@
+#gui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  margin: 40px 0;
+  color: #EEE;
+  z-index: 100;
+}
+
+#gui .dialog {
+  display: none;
+  padding: 10px;
+  width: 800px;
+  margin: 0 auto;
+  background-color: rgba(100, 100, 100, 0.3);
+}
+
+div.buttons {
+  margin: 10px 0 10px 0;
+  border: 1px solid red;
+}
+
+a.btn {
+  background-color: #D42F17;
+  color: #fff;
+  padding: 10px 15px;
+  font-size: 16px;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 20px 20px 0 0;
+}
+a.btn:hover {
+  background-color: #F2361A;
+}
+
+
+/**
+ * Level Selection Dialog
+ */
+div.levelButton { 
+  float: left;
+}
+
+div.levelButton .level {
+  position: relative;
+  background-color: #828259;
+  color: #4E2D21;
+  width: 165px;
+  height: 50px;
+  margin-right: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+div.levelButton .level h1 {
+  margin: 6px;
+}
+
+div.levelButton .level span {
+  position: absolute;
+}
+
+div.levelButton .level .meta {
+
+}
+
+div.levelButton .level span.points {
+  top: 2px;
+  right: 8px;
+}
+
+div.levelButton .level span.multiplier {
+  top: 20px;
+  right: 8px;
+}
+
+div.levelButton .level span.time {
+  bottom: 2px;
+  right: 8px;
+}
+
+div.levelButton .level.locked {
+  background: #40402C url('/images/locked.png') no-repeat center center;
+}
+
+div.levelButton .level.locked h1,
+div.levelButton .level.locked meta {
+  display: none;
+}
+
