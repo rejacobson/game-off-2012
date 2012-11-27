@@ -33,6 +33,11 @@ exports.factory = function(world, name, _stats, _settings) {
   settings.animation = animation.Animation.factory(mob.animation);
 
   var creature = new entity.Creature(world, name, stats, settings);
+if (name == 'hero') {
+  console.log('Creating a hero');
+  console.log(_settings);
+  console.log(creature);
+}
 
   if (mob.actions) {
     creature.actions = mob.actions;

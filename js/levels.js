@@ -107,14 +107,16 @@ Level.prototype.plantTrees = function(seeds) {
   // Plant trees
   _.each(seeds, function(s) {
     self.world.trees.push(plantTree(self.world, s, {
+      onFinished: function() {
+        // Begin testing for the end of the level
+        self.testing_finished_state = true;
+      },
 
       onGrowHorizontal: function(platform, direction) {
         //
         // Randomly spawn a monster
         //
         if (srand.random.range(1000) >= 995) {
-          // Begin testing for the end of the level
-          self.testing_finished_state = true;
 
           // Spawn a monster
           var monster = self.mobs[ srand.random.range(self.mobs.length-1) ]; 
@@ -146,6 +148,8 @@ levels['level1'] = {
 
 var plantTree = function(world, position, settings) {
   var rules = _.extend({
+    onFinished: null,
+
     onBranchHorizontal: null,
     onBranchVertical: null,
 
@@ -154,6 +158,7 @@ var plantTree = function(world, position, settings) {
   }, settings);
 
   return new tree.Tree(position, {
+    onFinished: rules.onFinished,
 
     // Called when a branch changes direction
     onBranch: function() {

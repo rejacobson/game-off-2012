@@ -158,12 +158,14 @@ Creature.prototype.lookingAt = function(entity) {
   return (entity.position[0] - this.position[0]) * this.facing > 0;
 };
 
-Creature.prototype.pushedOff = function(entity) {
+Creature.prototype.pushedOff = function(pusher) {
   this.state = 'falling';
   this.platform = null;
   this.pole = null;
   this.on_ground = false;
   this.interacting = false;
   this.velocity[1] = -300;
-  this.velocity[0] = entity.velocity[0];
+  this.velocity[0] = pusher.velocity[0];
+
+  if (pusher.pushed) pusher.pushed(this);
 };

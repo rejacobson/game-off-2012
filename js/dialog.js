@@ -1,4 +1,5 @@
 var scenes = require('scenes');
+var storage = require('storage');
 
 var _game, _callbacks = {};
 
@@ -49,9 +50,20 @@ $(document).ready(function(){
     show(dialog_to_open);
   }); 
 
+  // Set up the level tabs
+  var source = $("#level-button-template").html(),
+      template = Handlebars.compile(source),
+      context, html; 
+  
+  for (var i=1; i<=16; ++i) {
+    context = storage.getLevel(i); 
+    html = template(context);
+    $('#level-'+ i).html(html); 
+  }
+
   // Level buttons
-  $('#levels a.level').click(function(){
-    var level = parseInt($(this).attr('id').replace('level', '')),
+  $('#levels .levelButton').click(function(){
+    var level = parseInt($(this).attr('id').replace('level-', '')),
         scene = new scenes.GameScene(_game, level);
     hide();
     _game.start(scene);

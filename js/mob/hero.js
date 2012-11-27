@@ -1,6 +1,7 @@
 var gamejs = require('gamejs');
 var event = gamejs.event;
 var entity = require('entity');
+var points = require('points');
 
 gamejs.preload(['images/mob/hero.png']);
 
@@ -10,7 +11,11 @@ exports.stats = {
 
 exports.settings = function() {
   return {
+    points: new points.Counter(),
     hitbox: new gamejs.Rect([0, 0], [12, 20]),
+    pushed: function(entity) {
+      this.points.add(100);
+    },
     collision: function(entity) {
       // Player is moving faster than the entity
       if (this.velocity[0] != 0) { // && Math.abs(this.velocity[0]) > Math.abs(entity.velocity[0])) {

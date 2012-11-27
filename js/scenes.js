@@ -6,6 +6,7 @@ var collision = require('collision');
 var mob = require('mob');
 var tree = require('tree');
 var dialog = require('dialog');
+var hud = require('hud');
 
 var GameScene = exports.GameScene = function(game, level) {
   this.game = game;
@@ -33,6 +34,8 @@ var GameScene = exports.GameScene = function(game, level) {
     this.input_router.update(msDuration);
 
     world.entities.update(msDuration);
+
+    hud.update(msDuration, world.player); 
     
     // Collision detection
     collider.resolve();
