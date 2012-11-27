@@ -36,22 +36,22 @@
   </div>
 </script>
 
-<script type="text/x-handlebars-template" id="level-debrief">
+<script type="text/x-handlebars-template" id="scorecard-template">
   <table>
   <tr>
     <td>Points</td>
     <td>{{points}}</td>
-    <td>{{points_record}}</td>
+    <td>{{#if points_new_record}}New Record!{{/if}}</td>
   </tr>
   <tr>
     <td>Time</td>
     <td>{{time}}</td>
-    <td>{{time_record}}</td>
+    <td>{{#if time_new_record}}New Record!{{/if}}</td>
   </tr>
   <tr>
     <td>Multiplier</td>
-    <td>{{multiplier}}</td>
-    <td>{{multiplier_record}}</td>
+    <td>x{{multiplier}}</td>
+    <td>{{#if multiplier_new_record}}New Record!{{/if}}</td>
   </tr>
   </table>
 </script>
@@ -128,7 +128,7 @@
       <div id="win" class="dialog">
         <h1>Level Complete</h1>
 
-        <div id="debrief"></div>
+        <div id="scorecard"></div>
  
         <div class="buttons">
           <a class="btn btnNextLevel" href="javascript:void(0);">Next</a>

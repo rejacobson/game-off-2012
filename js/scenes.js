@@ -7,23 +7,61 @@ var mob = require('mob');
 var tree = require('tree');
 var dialog = require('dialog');
 var hud = require('hud');
+var storage = require('storage');
 
-var GameScene = exports.GameScene = function(game, level) {
-  this.game = game;
-  this.level = level;
-  this.input_router = new input.Router();
 
-  var level = levels.load('level'+ level);
+function timeTaken(ms_start, ms_end) {
+  var dt = Math.round((ms_end - ms_start) / 1000);
+  
+  return {
+    total: dt,
+    m: Math.floor(dt / 60),
+    s: dt % 60
+  }; 
+};
+
+
+function endOfGameTally(level, player, ms_start, ms_end) {
+  var level_data = storage.getLevel(level),
+      score = player.points.score(),
+      time = timeTaken(ms_start, ms_end);
+
+  return {
+    points: score.points,
+    multiplier: score.multiplier,
+    time: time.m +'m '+ time.s +'s', 
+
+    points_new_record: score.points > level_data.points,
+    multiplier_new_record: score.multiplier > level_data.multiplier,
+    time_new_record: time.total > level_data.time
+  };
+};
+
+function scoreCard(level, player, ms_start, ms_end) {
+  var score = endOfGameTally(level, player, ms_start, ms_end),
+      source = $("#scorecard-template").html(),
+      template = Handlebars.compile(source),
+      html = template(score);
+
+  $('#scorecard').html(html);   
+
+  return score;
+};
+
+
+var GameScene = exports.GameScene = function(game, level_number) {
+  var input_router = new input.Router();
+  var level = levels.load('level'+ level_number);
   var world = level.world;
-
-  // Player
-  world.player.controller = new input.Controller(world.player, mob.roster['hero'].keys, mob.roster['hero'].actions); 
-  this.input_router.register(world.player.controller);
-  this.handleEvent = this.input_router.handleEvent;
-
-  collider = new collision.Resolver(world.entities);
-
+  var collider = new collision.Resolver(world.entities);
   var status;
+  var start_time = Date.now();
+
+  // Player Controls
+  world.player.controller = new input.Controller(world.player, mob.roster['hero'].keys, mob.roster['hero'].actions); 
+  input_router.register(world.player.controller);
+
+  this.handleEvent = input_router.handleEvent;
 
   /////////////////////////
   // Update
@@ -31,7 +69,7 @@ var GameScene = exports.GameScene = function(game, level) {
   this.update = function(msDuration) {
     gamescreen.update(msDuration);
 
-    this.input_router.update(msDuration);
+    input_router.update(msDuration);
 
     world.entities.update(msDuration);
 
@@ -49,10 +87,15 @@ var GameScene = exports.GameScene = function(game, level) {
       var self = this;
       switch (status) {
         case 'win':
+          var end_time = Date.now(),
+              score = scoreCard(level_number, world.player, start_time, end_time);
+
+          storage.setLevel(level_number, score);
+
           dialog.show('win', {btnNext: function(){
-            var scene = new GameScene(self.game, self.level+1);
-            self.game.stop();
-            self.game.start(scene); 
+            var scene = new GameScene(game, self.level+1);
+            game.stop();
+            game.start(scene); 
           }});
           break;
 

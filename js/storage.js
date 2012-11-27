@@ -29,9 +29,14 @@ var getLevel = exports.getLevel = function(level) {
 };
 
 var setLevel = exports.setLevel = function(level, data) {
+  var existing = getLevel(level);
+
+  data = _.pick(data, _.keys(_default));
+
   data.level = level;
-  data = _.extend({}, _default, data);
+  data = _.extend(existing, data);
   data = JSON.stringify(data);
+
   localStorage.setItem('levels.'+ level, data);
 };
 
