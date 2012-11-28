@@ -104,7 +104,9 @@ GameScreen.prototype.moveTo = function(position) {
   var left = this.viewport.halfsize[0] - this.viewport.center[0],
       top = this.viewport.halfsize[1] - this.viewport.center[1];
 
-  this.layers.css({left:parseInt(left), top:parseInt(top)});
+  //this.layers.css({left:parseInt(left), top:parseInt(top)});
+  this.layers[0].style.left = parseInt(left)+'px';
+  this.layers[0].style.top = parseInt(top)+'px';
 };
 
 GameScreen.prototype.update = function(msDuration) {

@@ -160,20 +160,37 @@ var GameScene = exports.GameScene = function(game, level_number) {
 
 
 var SplashScene = exports.SplashScene = function() {
-console.log('#SplashScene -- 1');
-  var worldsize = [1200, 2000],
-      seed_at = [600, 1900],
+  var worldsize = [3000, 3000],
+      seed_at = [1500, 2500],
       trunk,
-      self = this;
+      self = this,
+      view_time = 0;
 
   this.wakeup = function() {
     gamescreen.clear();
     gamescreen.levelSize(worldsize); 
-    gamescreen.moveTo(trunk.branches()[0].profile().position);
+    gamescreen.moveTo(trunk.branches()[0].position);
     gamescreen.follow(trunk.branches()[0]);
+console.log('Following branch == ');
+console.log(trunk.branches()[0].position);
   }
 
   this.update = function(msDuration) {
+    view_time += msDuration;
+
+/*
+    if (view_time > 8) {
+      var branches = trunk.branches(),
+          index = branches.length - 1;
+
+      if (branches[index]) {
+        gamescreen.follow(branches[index]);
+      }
+
+      view_time = 0;
+    }
+*/
+
     gamescreen.update(msDuration);
     trunk.update(msDuration);
 
@@ -184,10 +201,12 @@ console.log('#SplashScene -- 1');
 
   this.draw = function() {
     trunk.draw(gamescreen.display('background'));
+    gamescreen.display('main').clear();
+    gamescreen.draw(gamescreen.display('main'));
   }
 
   function seed() {
-    trunk = new tree.Tree(seed_at.slice(0));
+    trunk = new tree.Oak(seed_at);
     self.wakeup();
   }
 
