@@ -4,283 +4,228 @@ var util = require('util');
 var vectors = gamejs.utils.vectors;
 
 
-var Tree = exports.Tree = function(seed_position, settings) {
-  this.leads = [];
-  this.base = seed_position;
-  this.finished = false;
+var Tree = exports.Tree = function(seed, trunk_settings) {
+  var branches = [];
+  
+  this.callbacks = {};
+    
+  _.extend(this, {
+    
+    finished: function() {
+      return branches.length <= 0;
+    },
+  
+    addBranch: function(branch) {
+      branches.push(branch);
+    },
+  
+    removeBranch: function(branch) {
+      var i = _.indexOf(branches, branch);
+      if (-1 != i) branches.splice(i, 1);
+    },
 
-  this.settings = {
-    onBend: function() {},
-    onBranch: function() {},
-    onGrow: function() {},
-    onFinished: function() {}
-  };
-  _.extend(this.settings, settings);
+    branches: function() {
+      return branches;
+    },
+  
+    update: function(msDuration) {
+      if (this.finished()) return false;
 
-  this.add_lead({
-    position: this.base.slice(0),
+      var branch, dead = [];
+      for (var i=0, len=branches.length; i<len; ++i) {
+        branch = branches[i];
+
+        if (false === branch.update(msDuration)) {
+          dead.push(branch);
+        };
+      }
+      
+      for (var i=0, len=dead.length; i<len; ++i) {
+        this.removeBranch(dead[i]);
+      }
+      
+      if (this.finished()) {
+        if (this.callbacks.onFinished && _.isFunction(this.callbacks.onFinished())) this.callbacks.onFinished.call(this);
+      }
+    },
+    
+    draw: function(background, foreground) {
+      for (var i=0, len=branches.length; i<len; ++i) {
+        branches[i].draw(background, foreground);
+      };
+    }
+  });
+  
+  trunk_settings = {
+    position: seed.slice(0),
     width: 25,
     lifespan: 15,
     direction: [0, -1],
     trend: [0, -1],
     momentum: 3,
-    sprouts: 6,
-    bounds: [null, 100, null, this.base[1] - 50] // left, top, right, bottom
-  });
-};
-
-Tree.prototype.update = function(msDuration) {
-  if (this.finished) return false;
-
-  if (!this.leads.length) {
-    this.finished = true;
-    if (this.settings.onFinished && _.isFunction(this.settings.onFinished())) {
-      this.settings.onFinished.call(this);
-    }
-    return false;
-  }
-
-  var lead, dead = [];
-  for (var i=0, len=this.leads.length; i<len; ++i) {
-    lead = this.leads[i];
-
-    if (false === lead.update(msDuration)) {
-      dead.push(lead);
-    };
-  }
-
-  for (var i=0, len=dead.length; i<len; ++i) {
-    this.remove_lead(dead[i]);
-  }
-};
-
-Tree.prototype.draw = function(display) {
-  for (var i=0, len=this.leads.length; i<len; ++i) {
-    this.leads[i].draw(display);
+    sprouts: 6
   };
-};
 
-Tree.prototype.add_lead = function(settings) {
-  var lead = new Lead(this, settings);
-  this.leads.push(lead);
-  if (this.settings.onBranch) {
-    this.settings.onBranch.call(lead);
-  }
-};
-
-Tree.prototype.remove_lead = function(lead) {
-  var i = _.indexOf(this.leads, lead);
-  if (-1 != i) {
-    this.leads.splice(i, 1);
-  } 
+console.log('new Tree !!!!!!!!!!!!!!!!!!!!!!!');
+  this.addBranch(new Branch(this, trunk_settings));
 };
 
 
-var Lead = function(tree, settings) {
-  this.tree = tree;
-  
-  var defaults = {
-    generation: 0,
-    lifespan: 15,
-    speed: 150,
-    step: 50,
-    trend: null,
-    momentum: 0,
-    sprouts: 0,
-    bounds: [null, null, null, null], // left, top, right, bottom bounds
-    
+var Branch = function(tree, settings) {
+  var profile = {
     position: [0, 0],
     last_position: [0, 0],
     destination: [0, 0],
+    velocity: [0, 0],
     
-    width: 2,
-    color: '#521300'
-  }
-  _.extend(this, defaults, settings);
-
-  this.last_position = this.position.slice(0);
-
-  this.heading(settings.direction);
-};
-
-Lead.prototype.in_bounds = function(position) {
-  return (this.bounds[0] == null || position[0] >= this.bounds[0]) &&
-         (this.bounds[1] == null || position[1] >= this.bounds[1]) &&
-         (this.bounds[2] == null || position[0] <= this.bounds[2]) &&
-         (this.bounds[3] == null || position[1] <= this.bounds[3]);
-};
-
-Lead.prototype.sprout_percentage = function() {
-  return Math.round(this.sprouts / this.lifespan * 100);
-};
-
-Lead.prototype.sprout = function(settings) {
-  var forced_settings = {
-    generation: this.generation + 1,
-    width: Math.floor(this.width / 2)
+    direction: [0, -1],
+    trend: [0, 0],
+    
+    speed: 150,
+    step: 50,
+    momentum: 0,
+    
+    generation: 0,
+    lifespan: 0,
+    
+    turn_chance: 20,
+    sprout_chance: 20,
+    
+    color: '#521300'   
   };
-  _.extend(settings, forced_settings);
-  this.tree.add_lead(settings);  
-};
+  
+  _.extend(profile, settings);
 
-Lead.prototype.grow = function() {
-  var self = this;
+  // Utility functions
+  function set_direction(p, dir) {
+    p.direction = dir;
+    p.destination = vectors.add(p.destination, vectors.multiply(p.direction, p.step));
+    p.velocity = vectors.multiply(p.direction, p.speed);
+  }
+  
+  // Methods
+  _.extend(this, {
 
-  // Sprouting directions
-  var sprout_directions = [vectors.leftNormal(this.direction), vectors.rightNormal(this.direction)];
-  var directions = this.candidate_directions();
-  var new_direction = this.direction;
-  var turning = false;
+    arrived_at_destination: function() {
+      // Use dot product to determine what side of the destination the current position is on.
+      // http://forums.anandtech.com/showthread.php?t=162930
+      return vectors.dot(vectors.subtract(profile.destination, profile.position), profile.direction) <= 0;
+    },
+    
+    adjacent_directions: function() {
+      return [vectors.leftNormal(profile.direction), vectors.rightNormal(profile.direction)];
+    },
 
-  if (this.momentum <= 0) {
-    if (this.trend) {
-      var measured_directions = [];
-      _.each(directions, function(dir, i) {
-        measured_directions.push({dir: dir, dot: vectors.dot(self.trend, dir)});
-      }); 
-     
-      // Sort by the dot product
-      measured_directions.sort(function(a, b) { return a.dot - b.dot; });
+    profile: function() {
+      return profile;
+    },
 
-      // Remove the negative direction
-      if (measured_directions[0].dot < 0) measured_directions.splice(0, 1); 
-
-      // Weight the destinations
-      directions = [];
-      _.each(measured_directions, function(d) {
-        var n = Math.floor(d.dot + 1) * 4;
-        for (; n > 0; n--) {
-          directions.push(d.dir);
-        }
+    clone: function() {
+      var copy = _.clone(profile);
+      
+      _.extend(copy, {
+        position: profile.position.slice(0),
+        last_position: profile.last_position.slice(0),
+        destination: profile.destination.slice(0),
+        velocity: profile.velocity.slice(0),
+        direction: profile.direction.slice(0),
+        trend: profile.trend.slice(0)
       });
+      
+      return copy;
+    },
+    
+    transform: function() {
+      var copy = this.clone(profile);
+      
+      if (profile.transform && _.isFunction(profile.transform)) {
+        copy = profile.transform.call(this, copy);
+      }
+      
+      return copy;
+    },
+    
+    // Sprout a new branch
+    sprout: function() {
+      var choices = _.without(this.adjacent_directions(), profile.direction),
+          index = srand.random.range(0, choices.length),
+          dir= choices[index],
+          clone = this.clone();
+          
+      clone.generation = profile.generation - 1;
+      set_direction(clone, dir); 
+      tree.addBranch(new Branch(tree, clone));
+    },
+    
+    // Turn left or right
+    turn: function() {
+      var anti_trend = vectors.multiply(profile.trend, -1),
+          directions = _.reject(this.adjacent_directions(), function(i) { return i[0] == anti_trend[0] && i[1] == anti_trend[1]; });
+          index = srand.random.range(0, directions.length-1),
+          dir = directions[index];
 
-      directions = _.shuffle(directions);
-    }
+      set_direction(profile, dir); 
+    },
+  
+    // Turn or Sprout
+    arrive: function() {
+      profile.position = profile.destination.slice(0);
+      //if (!in_bounds(profile.position)) profile.lifespan = 0;
+      if (profile.momentum > 0) profile.momentum--;
+      if (profile.lifespan > 0) {
+        profile.lifespan--;
+        this.behave();
+      }
+    },
+    
+    // Turn or Sprout
+    behave: function() {
+      if (profile.momentum <= 0 && srand.random.range(0, 100) > profile.turn_chance) {
+        this.turn();
+      } else {
+        // Go straight
+        profile.destination = vectors.add(profile.destination, vectors.multiply(profile.direction, profile.step));
+      }
+      
+      if (srand.random.range(0, 100) > profile.sprout_chance) {
+        this.sprout();
+      }
+    },
+  
+    // Update this branch
+    update: function(msDuration) {
+      if (profile.lifespan <= 0) return false;
 
-    var new_direction = directions[srand.random.range(directions.length-1)];
-    var new_destination = vectors.add(this.position, vectors.multiply(new_direction, this.step));
+      profile.last_position = profile.position.slice(0);
+      profile.position = vectors.add(profile.position, vectors.multiply(profile.velocity, msDuration));
+      profile.position[0] = Math.round(profile.position[0]);
+      profile.position[1] = Math.round(profile.position[1]);
 
-    if (!this.in_bounds(new_destination)) {
-      new_direction = this.direction;
-    }
-  }
+      if (this.arrived_at_destination()) {
+        this.arrive();
+      }
+    },
+    
+    // Draw the branch
+    draw: function(background, foreground) {
+      // Moving vertically
+      if (profile.direction[0] == 0) {
+        gamejs.draw.line(background, profile.color, profile.position, profile.last_position, profile.width);
 
-  if (new_direction != this.direction) turning = true; 
+      // Moving horizontally
+      } else {
+        var w = profile.width,
+            dy = profile.width;
 
-  this.position = this.destination.slice(0);
-  this.heading(new_direction);
+        if (w %2 == 0) w += 1;
+        dy = Math.floor(w * 0.5);
 
-  ////////////////////////////////////
-  //
-  // Smooth out the direction changes
-  //
-  // Moving up or down
-  if (turning && new_direction[0] == 0) {
-    this.last_position[0] = this.position[0];
-    if (new_direction[1] < 0) this.last_position[1] = Math.ceil(this.position[1] + this.width);
+        gamejs.draw.line(background, profile.color, [profile.position[0], profile.position[1] + dy], [profile.last_position[0], profile.last_position[1] + dy], w);
+      }
+    }  
+  });
 
-  // Moving left or right
-  } else if (turning && new_direction[1] == 0) {
-    this.last_position[1] = this.position[1];
-    //this.last_position[0] = this.position[0] - Math.floor(this.width / 2);
-
-    if (new_direction[0] < 0) {
-      this.last_position[0] = this.position[0] - Math.floor(this.width * 0.5);
-    } else {
-      this.last_position[0] = this.position[0] + Math.floor(this.width * 0.5);
-    }
-  }
-  ////////////////////////////////////
-
-  if (turning && this.tree.settings.onBranch) {
-    this.tree.settings.onBranch.call(this);
-  }
-
-  if (this.generation < 3 && this.width >= 2 && srand.random.range(100) < this.sprout_percentage()) {
-    sprout_directions = _.without(sprout_directions, this.direction); //_.reject(sprout_directions, function(d) { d == this.direction });
-    var dir = sprout_directions[srand.random.range(sprout_directions.length-1)];
-    var dest = vectors.add(this.position, vectors.multiply(dir, this.step));
-    var sprout_pos = this.position.slice(0);
-    var sprout_last_pos = dir[1] < 0 ? vectors.add(sprout_pos, [0, this.width]) : sprout_pos.slice(0);
-
-    if (this.in_bounds(dest)) {
-      this.sprout({
-        position: sprout_pos,
-        last_position: sprout_last_pos,
-        direction: dir,
-        trend: dir,
-        lifespan: 8,
-        momentum: 3,
-        sprouts: 2,
-        bounds: this.bounds
-      });  
-      this.sprouts--;
-    }
-  }
-};
-
-Lead.prototype.heading = function(direction) {
-  this.direction = direction;
-  this.destination = vectors.add(this.position, vectors.multiply(this.direction, this.step)); 
-  this.velocity = vectors.multiply(this.direction, this.speed);
-};
-
-Lead.prototype.candidate_directions = function() {
-  return [
-    vectors.leftNormal(this.direction),
-    this.direction,
-    vectors.rightNormal(this.direction)
-  ]; 
-};
-
-Lead.prototype.has_arrived = function() {
-  // Use dot product to determine what side of the destination the current position is on.
-  // http://forums.anandtech.com/showthread.php?t=162930
-  return vectors.dot(vectors.subtract(this.destination, this.position), this.direction) <= 0;
-};
-
-Lead.prototype.update = function(msDuration) {
-  if (this.lifespan <= 0) return false;
-
-  this.last_position = this.position.slice(0);
-  this.position = vectors.round(vectors.add(this.position, vectors.multiply(this.velocity, msDuration)));
-  this.position[0] = Math.round(this.position[0]);
-  this.position[1] = Math.round(this.position[1]);
-
-
-  if (this.tree.settings.onGrow) this.tree.settings.onGrow.call(this, msDuration);
-
-  if (this.has_arrived()) {
-    this.position = this.destination.slice(0);
-    if (!this.in_bounds(this.position)) this.lifespan = 0;
-    if (this.momentum > 0) this.momentum--;
-    if (this.lifespan > 0) {
-      this.lifespan--;
-      this.grow();
-    }
-  }
-};
-
-var rect = new gamejs.Rect([0, 0]);
-Lead.prototype.draw = function(display) {
-  // Moving vertically
-  if (this.direction[0] == 0) {
-    gamejs.draw.line(display, this.color, this.position, this.last_position, this.width);
-
-  // Moving horizontally
-  } else {
-    var w = this.width,
-        dy = this.width;
-
-    if (w %2 == 0) w += 1;
-    dy = Math.floor(w * 0.5); 
-
-    gamejs.draw.line(display, this.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], w);
-/*
-    rect.topleft = this.position;
-    rect.width = this.position[0] - this.last_position[0]; 
-    rect.height = this.width;
-    gamejs.draw.rect(display, this.color, rect); 
-*/
-  }
+  profile.last_position = profile.position.slice(0);
+  profile.destination = profile.position.slice(0); 
+  set_direction(profile, profile.direction);
 };

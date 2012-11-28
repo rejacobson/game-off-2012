@@ -160,6 +160,7 @@ var GameScene = exports.GameScene = function(game, level_number) {
 
 
 var SplashScene = exports.SplashScene = function() {
+console.log('#SplashScene -- 1');
   var worldsize = [1200, 2000],
       seed_at = [600, 1900],
       trunk,
@@ -168,15 +169,15 @@ var SplashScene = exports.SplashScene = function() {
   this.wakeup = function() {
     gamescreen.clear();
     gamescreen.levelSize(worldsize); 
-    gamescreen.moveTo(trunk.leads[0].position);
-    gamescreen.follow(trunk.leads[0]);
+    gamescreen.moveTo(trunk.branches()[0].profile().position);
+    gamescreen.follow(trunk.branches()[0]);
   }
 
   this.update = function(msDuration) {
     gamescreen.update(msDuration);
     trunk.update(msDuration);
 
-    if (trunk.finished) {
+    if (trunk.finished()) {
       seed();
     }
   }

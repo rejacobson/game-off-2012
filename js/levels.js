@@ -160,6 +160,7 @@ levels['level2'] = {
 
 
 var plantTree = function(world, position, settings) {
+console.log('Plant Tree');
   var rules = _.extend({
     onFinished: null,
 
