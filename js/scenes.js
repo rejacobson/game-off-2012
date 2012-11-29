@@ -8,6 +8,7 @@ var tree = require('tree');
 var dialog = require('dialog');
 var hud = require('hud');
 var storage = require('storage');
+var srand = require('srand');
 
 
 function timeTaken(ms_start, ms_end) {
@@ -160,55 +161,85 @@ var GameScene = exports.GameScene = function(game, level_number) {
 
 
 var SplashScene = exports.SplashScene = function() {
-  var worldsize = [3000, 3000],
-      seed_at = [1500, 2500],
-      trunk,
+  var trunk,
       self = this,
-      view_time = 0;
+      view_time = 0,
+      current_demo;
+
+  var demos = [
+    { worldsize: [1800, 2000],
+      seed_at: [900, 1900],
+      type: 'Oak',
+      view_time: 8
+    },
+
+    { worldsize: [1400, 3400],
+      seed_at: [700, 3300],
+      type: 'Pine',
+      view_time: null
+    },
+
+    { worldsize: [2400, 900],
+      seed_at: [1200, 850],
+      type: 'Willow',
+      view_time: 4
+    },
+
+    { worldsize: [1400, 2000],
+      seed_at: [700, 400],
+      type: 'Down',
+      view_time: null
+    },
+
+    { worldsize: [1200, 700],
+      seed_at: [600, 500],
+      type: 'Bonzai',
+      settings: {
+        max_steps: 100 
+      },
+      view_time: null
+    }
+  ];
+
+  function pick_demo() {
+    var index = srand.random.range(demos.length - 1);
+    return demos[index];
+  }
+
+  function load_demo(demo) {
+    current_demo = demo;
+    trunk = new tree[current_demo.type](current_demo.seed_at, current_demo.settings || {});
+    self.wakeup();
+  }
 
   this.wakeup = function() {
     gamescreen.clear();
-    gamescreen.levelSize(worldsize); 
+    gamescreen.levelSize(current_demo.worldsize); 
     gamescreen.moveTo(trunk.branches()[0].position);
     gamescreen.follow(trunk.branches()[0]);
-console.log('Following branch == ');
-console.log(trunk.branches()[0].position);
   }
 
   this.update = function(msDuration) {
     view_time += msDuration;
 
-/*
-    if (view_time > 8) {
-      var branches = trunk.branches(),
-          index = branches.length - 1;
-
-      if (branches[index]) {
-        gamescreen.follow(branches[index]);
-      }
-
+    if (current_demo.view_time && view_time > current_demo.view_time) {
+      gamescreen.follow(trunk.getLastBranch());
       view_time = 0;
     }
-*/
 
     gamescreen.update(msDuration);
     trunk.update(msDuration);
 
     if (trunk.finished()) {
-      seed();
+      load_demo(pick_demo());
     }
   }
 
   this.draw = function() {
     trunk.draw(gamescreen.display('background'));
-    gamescreen.display('main').clear();
-    gamescreen.draw(gamescreen.display('main'));
+    //gamescreen.display('main').clear();
+    //gamescreen.draw(gamescreen.display('main'));
   }
 
-  function seed() {
-    trunk = new tree.Oak(seed_at);
-    self.wakeup();
-  }
-
-  seed();
+  load_demo(pick_demo());
 };

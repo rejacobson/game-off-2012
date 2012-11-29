@@ -13,14 +13,16 @@ var Oak = exports.Oak = function(seed, settings) {
     momentum: 8,
     sprouts: 6,
     bounds: [null, 100, null, seed[1] - 100], // left, top, right, bottom
-    transform: function(opts) {
-      return _.extend(opts, {
+    transform: function(branch) {
+      _.extend(branch.profile, {
         max_steps: 15,
-        width: Math.max(Math.round(opts.width * 0.5), 1),
+        width: Math.max(Math.round(branch.profile.width * 0.5), 1),
         momentum: 3,
         sprouts: 2,
-        trend: opts.direction
+        trend: branch.profile.direction
       }); 
+
+      return branch;
     }
   };
 
@@ -38,14 +40,16 @@ var Pine = exports.Pine = function(seed, settings) {
     momentum: 12,
     sprouts: 10,
     bounds: [null, 100, null, seed[1] - 200], // left, top, right, bottom
-    transform: function(opts) {
-      return _.extend(opts, {
+    transform: function(branch) {
+      _.extend(branch.profile, {
         max_steps: 5,
-        width: Math.max(Math.round(opts.width * 0.5), 1),
+        width: Math.max(Math.round(branch.profile.width * 0.5), 1),
         momentum: 5,
         sprouts: 2,
-        trend: opts.direction
+        trend: branch.profile.direction
       }); 
+
+      return branch;
     }
   };
 
@@ -63,17 +67,19 @@ var Willow = exports.Willow = function(seed, settings) {
     momentum: 3,
     sprouts: 7,
     bounds: [null, 100, null, seed[1] - 50], // left, top, right, bottom
-    transform: function(opts) {
-      var sideways = opts.direction[1] == 0;
+    transform: function(branch) {
+      var sideways = branch.profile.direction[1] == 0;
 
-      return _.extend(opts, {
+      _.extend(branch.profile, {
         max_generations: 5,
         max_steps: sideways ? 25 : 2,
-        width: opts.generation == 1 ? 4 : Math.max(Math.round(opts.width * 0.75), 1),
+        width: branch.profile.generation == 1 ? 4 : Math.max(Math.round(branch.profile.width * 0.75), 1),
         momentum: sideways ? 8 : 0,
         sprouts: sideways ? 4 : 1,
-        trend: opts.direction
+        trend: branch.profile.direction
       }); 
+
+      return branch;
     }
   };
 
@@ -82,16 +88,72 @@ var Willow = exports.Willow = function(seed, settings) {
   return new Tree(seed, settings);
 };
 
+var Down = exports.Down = function(seed, settings) {
+  var defaults = {
+    width: 20,
+    max_steps: 25,
+    direction: [0, -1],
+    trend: [0, 1],
+    momentum: 1,
+    sprouts: 6,
+    sprout_delay: 8,
+    bounds: [null, 100, null, null], // left, top, right, bottom
+    transform: function(branch) {
+      _.extend(branch.profile, {
+        max_steps: 15,
+        width: Math.max(Math.round(branch.profile.width * 0.5), 1),
+        momentum: 2,
+        sprouts: 2,
+        sprout_delay: 0,
+        trend: branch.profile.direction
+      }); 
 
+      return branch;
+    }
+  };
+
+  settings = _.extend(defaults, settings);
+
+  return new Tree(seed, settings);
+}
+
+
+var Bonzai = exports.Bonzai = function(seed, settings) {
+  var defaults = {
+    width: 1,
+    step: 10,
+    max_steps: 10,
+    direction: [0, -1],
+    trend: [0, -1],
+    momentum: 4,
+    sprouts: 4,
+    bounds: [null, 100, null, seed[1] - 10], // left, top, right, bottom
+    transform: function(branch) {
+      _.extend(branch.profile, {
+        max_steps: Math.ceil(branch.profile.max_steps * 0.75),
+        width: 1,
+        momentum: 3,
+        sprouts: 2,
+        trend: branch.profile.direction
+      }); 
+
+      return branch;
+    }
+  };
+
+  settings = _.extend(defaults, settings);
+
+  return new Tree(seed, settings);
+}
 
 var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
   var branches = [];
+  var last_branch;
   var size = 0;
   var i, len;
 
   _.extend(trunk_settings, {
-    generation: 0,
-    position: seed.slice(0)
+    generation: 0
   });
     
   _.extend(this, {
@@ -112,11 +174,16 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
       return b;
     },
 
+    getLastBranch: function() {
+      return last_branch;
+    },
+
     finished: function() {
       return size <= 0;
     },
   
     addBranch: function(branch) {
+      last_branch = branch;
       branches.push(branch);
       size++;
     },
@@ -128,10 +195,6 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
   
     update: function(msDuration) {
       if (this.finished()) return false;
-
-      this.eachBranch(function(branch) {
-        if (false === branch.update(msDuration)) this.removeBranch(branch);
-      });
 
       for (i=0, len=branches.length; i<len; ++i) {
         if (!branches[i].alive) continue;
@@ -151,16 +214,17 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
     }
   });
 
-  this.addBranch(new Branch(this, trunk_settings));
+  this.addBranch(new Branch(this, seed, trunk_settings));
 };
 
 
-var Branch = function(tree, settings) {
+var Branch = function(tree, position, settings) {
   this.alive = true;
+  this.tree = tree;
+  this.position = position.slice(0);
+  this.last_position = position.slice(0);
 
-  var profile = {
-    position: [0, 0],
-    last_position: [0, 0],
+  this.profile = {
     destination: [0, 0],
     velocity: [0, 0],
     
@@ -182,12 +246,13 @@ var Branch = function(tree, settings) {
     color: '#521300',
 
     sprouts: 0,
+    sprout_delay: 0,
 
     bounds: [null, null, null, null], // left, top, right, bottom bounds
 
-    transform: function(opts) {
-      opts.width = Math.max(Math.round(opts.width * 0.5), 1);
-      return opts;
+    transform: function(branch) {
+      branch.profile.width = Math.max(Math.round(branch.profile.width * 0.5), 1);
+      return branch;
     },
 
     onGrow: null,
@@ -196,191 +261,184 @@ var Branch = function(tree, settings) {
     onStep: null
   };
   
-  _.extend(profile, settings);
+  _.extend(this.profile, settings);
 
-  // Utility functions
-  function set_direction(p, dir) {
-    p.direction = dir;
-    p.destination = vectors.add(p.destination, vectors.multiply(p.direction, p.step));
-    p.velocity = vectors.multiply(p.direction, p.speed);
-  }
-
-  function in_bounds(position, p) {
-    if (!p) p = profile;
-
-    return (p.bounds[0] == null || position[0] >= p.bounds[0]) &&
-           (p.bounds[1] == null || position[1] >= p.bounds[1]) &&
-           (p.bounds[2] == null || position[0] <= p.bounds[2]) &&
-           (p.bounds[3] == null || position[1] <= p.bounds[3]);
-  }
-  
-  // Methods
-  _.extend(this, {
-    position: [0, 0],
-
-    sproutChance: function() {
-      return Math.round(profile.sprouts / profile.step_count * 100);
-    },
-
-    hasArrivedAtDestination: function() {
-      // Use dot product to determine what side of the destination the current position is on.
-      // http://forums.anandtech.com/showthread.php?t=162930
-      return vectors.dot(vectors.subtract(profile.destination, profile.position), profile.direction) <= 0;
-    },
-    
-    adjacentDirections: function() {
-      return [vectors.leftNormal(profile.direction), vectors.rightNormal(profile.direction)];
-    },
-
-    profile: function() {
-      return profile;
-    },
-
-    clone: function() {
-      var copy = _.clone(profile);
-      
-      _.extend(copy, {
-        position: profile.position.slice(0),
-        last_position: profile.last_position.slice(0),
-        destination: profile.destination.slice(0),
-        velocity: profile.velocity.slice(0),
-        direction: profile.direction.slice(0),
-        trend: profile.trend.slice(0)
-      });
-      
-      return copy;
-    },
-    
-    transform: function(copy) {
-      if (profile.transform && _.isFunction(profile.transform)) {
-        copy = profile.transform.call(this, copy);
-      }
-      
-      return copy;
-    },
-    
-    // Sprout a new branch
-    sprout: function() {
-      var choices = _.without(this.adjacentDirections(), profile.direction),
-          index = srand.random.range(0, choices.length - 1),
-          dir = choices[index],
-          copy = _.extend(this.clone(), {
-            step_count: 0,
-            generation: profile.generation + 1  
-          });
-
-      set_direction(copy, dir); 
-
-      if (!in_bounds(copy.destination, copy)) return;
-
-      copy = this.transform(copy); 
-      
-      // onSprout - callback
-      if (profile.onSprout && false === profile.onSprout.call(this, copy)) return false;
-
-      tree.addBranch(new Branch(tree, copy));
-
-      profile.sprouts--;
-    },
-    
-    // Turn left or right
-    turn: function() {
-      var anti_trend = vectors.multiply(profile.trend, -1),
-          directions = _.reject(this.adjacentDirections(), function(i) { return i[0] == anti_trend[0] && i[1] == anti_trend[1]; });
-          index = srand.random.range(0, directions.length-1),
-          dir = directions[index],
-          new_dest = vectors.add(profile.destination, vectors.multiply(dir, profile.step));
-
-      // onTurn - callback
-      if (profile.onTurn && false === profile.onTurn.call(this, dir, new_dest)) return false;
-
-      if (!in_bounds(new_dest)) {
-        dir = profile.direction;
-      } else {
-        if (dir[0] == 0 && dir[1] < 0) profile.last_position[1] = profile.position[1] + profile.width - 1;
-      }
-
-      set_direction(profile, dir); 
-    },
-  
-    // Turn or Sprout
-    arrive: function() {
-      if (!in_bounds(profile.position) && profile.momentum <= 0) profile.step_count = profile.max_steps;
-
-      if (profile.momentum > 0) profile.momentum--;
-
-      // onStep - callback
-      if (profile.onStep) profile.onStep.call(this);
-
-      if (profile.step_count < profile.max_steps) {
-        profile.step_count++;
-        this.behave();
-      }
-    },
-    
-    // Turn or Sprout
-    behave: function() {
-      if (profile.momentum <= 0 && srand.random.range(0, 100) > profile.turn_chance) {
-        this.turn();
-      } else {
-        // Go straight
-        profile.destination = vectors.add(profile.destination, vectors.multiply(profile.direction, profile.step));
-      }
-      
-      if (profile.generation < profile.max_generations && profile.sprouts > 0 && srand.random.range(100) < this.sproutChance()) {
-        this.sprout();
-      }
-    },
-  
-    // Update this branch
-    update: function(msDuration) {
-      if (profile.step_count >= profile.max_steps) return false;
-
-      profile.last_position = profile.position.slice(0);
-
-      if (this.delayed_callback) {
-        this.delayed_callback.call(this);
-        this.delayed_callback = null;
-      }
-
-      profile.position = vectors.add(profile.position, vectors.multiply(profile.velocity, msDuration));
-
-      profile.position[0] = Math.round(profile.position[0]);
-      profile.position[1] = Math.round(profile.position[1]);
-
-      if (this.hasArrivedAtDestination()) {
-        profile.position = profile.destination.slice(0);
-        this.position = profile.position;
-
-        this.delayed_callback = this.arrive;
-      }
-
-      // onGrow - callback
-      if (profile.onGrow) profile.onGrow.call(this, msDuration);
-    },
-    
-    // Draw the branch
-    draw: function(background, foreground) {
-      // Moving vertically
-      if (profile.direction[0] == 0) {
-        gamejs.draw.line(background, profile.color, profile.position, profile.last_position, profile.width);
-
-      // Moving horizontally
-      } else {
-        var w = profile.width,
-            dy = profile.width;
-
-        if (w %2 == 0) w += 1;
-        dy = Math.floor(w * 0.5);
-
-        gamejs.draw.line(background, profile.color, [profile.position[0], profile.position[1] + dy], [profile.last_position[0], profile.last_position[1] + dy], w);
-      }
-    }  
-  });
-
-
-  this.position = profile.position;
-  profile.last_position = profile.position.slice(0);
-  profile.destination = profile.position.slice(0); 
-  set_direction(profile, profile.direction);
+  this.setDirection(this, this.profile.direction);
 };
+
+
+Branch.prototype = {
+  setDirection: function(branch, dir) {
+    var p = branch.profile;
+    p.direction = dir;
+    p.destination = vectors.add(branch.position, vectors.multiply(p.direction, p.step));
+    p.velocity = vectors.multiply(p.direction, p.speed);
+  },
+
+  inBounds: function(branch, position) {
+    if (!branch) branch = this;
+    if (!position) position = branch.position;
+
+    return (branch.profile.bounds[0] == null || position[0] >= branch.profile.bounds[0]) &&
+           (branch.profile.bounds[1] == null || position[1] >= branch.profile.bounds[1]) &&
+           (branch.profile.bounds[2] == null || position[0] <= branch.profile.bounds[2]) &&
+           (branch.profile.bounds[3] == null || position[1] <= branch.profile.bounds[3]);
+  },
+
+  sproutChance: function() {
+    return Math.round(this.profile.sprouts / this.profile.step_count * 100);
+  },
+
+  hasArrivedAtDestination: function() {
+    // Use dot product to determine what side of the destination the current position is on.
+    // http://forums.anandtech.com/showthread.php?t=162930
+    return vectors.dot(vectors.subtract(this.profile.destination, this.position), this.profile.direction) <= 0;
+  },
+
+  adjacentDirections: function() {
+    return [vectors.leftNormal(this.profile.direction), vectors.rightNormal(this.profile.direction)];
+  },
+
+  clone: function() {
+    var cloned_profile = _.clone(this.profile);
+    
+    _.extend(cloned_profile, {
+      destination: this.profile.destination.slice(0),
+      velocity: this.profile.velocity.slice(0),
+      direction: this.profile.direction.slice(0),
+      trend: this.profile.trend.slice(0),
+    });
+    
+    return new Branch(this.tree, this.position, cloned_profile);
+  },
+
+  transform: function(branch_copy) {
+    if (this.profile.transform && _.isFunction(this.profile.transform)) {
+      branch_copy = this.profile.transform.call(this, branch_copy);
+    }
+    
+    return branch_copy;
+  },
+
+  // Sprout a new branch
+  sprout: function() {
+    var choices = _.without(this.adjacentDirections(), this.profile.direction),
+        index = srand.random.range(0, choices.length - 1),
+        dir = choices[index],
+        cloned_branch = this.clone();
+
+    _.extend(cloned_branch.profile, {
+      step_count: 0,
+      generation: this.profile.generation + 1  
+    });
+
+    this.setDirection(cloned_branch, dir); 
+
+    if (!this.inBounds(cloned_branch, cloned_branch.profile.destination)) return false;
+
+    cloned_branch = this.transform(cloned_branch); 
+    
+    // onSprout - callback
+    if (this.profile.onSprout && false === this.profile.onSprout.call(this, cloned_branch)) return false;
+
+    this.tree.addBranch(cloned_branch);
+
+    this.profile.sprouts--;
+  },
+
+  // Turn left or right
+  turn: function() {
+    var anti_trend = vectors.multiply(this.profile.trend, -1),
+        directions = _.reject(this.adjacentDirections(), function(i) { return i[0] == anti_trend[0] && i[1] == anti_trend[1]; });
+        index = srand.random.range(0, directions.length-1),
+        dir = directions[index],
+        new_dest = vectors.add(this.profile.destination, vectors.multiply(dir, this.profile.step));
+
+    // onTurn - callback
+    if (this.profile.onTurn && false === this.profile.onTurn.call(this, dir, new_dest)) return false;
+
+    if (!this.inBounds(this, new_dest)) {
+      dir = this.profile.direction;
+    } else {
+      if (dir[0] == 0 && dir[1] < 0) this.last_position[1] = this.position[1] + this.profile.width - 1;
+    }
+
+    this.setDirection(this, dir); 
+  },
+
+  // Turn or Sprout
+  arrive: function() {
+    if (!this.inBounds() && this.profile.momentum <= 0) this.profile.step_count = this.profile.max_steps;
+
+    if (this.profile.momentum > 0) this.profile.momentum--;
+    if (this.profile.sprout_delay > 0) this.profile.sprout_delay--;
+
+    // onStep - callback
+    if (this.profile.onStep) this.profile.onStep.call(this);
+
+    if (this.profile.step_count < this.profile.max_steps) {
+      this.profile.step_count++;
+      this.behave();
+    }
+  },
+
+  // Turn or Sprout
+  behave: function() {
+    if (this.profile.momentum <= 0 && srand.random.range(0, 100) > this.profile.turn_chance) {
+      this.turn();
+    } else {
+      // Go straight
+      this.profile.destination = vectors.add(this.profile.destination, vectors.multiply(this.profile.direction, this.profile.step));
+    }
+    
+    if (this.profile.sprout_delay <= 0 && this.profile.generation < this.profile.max_generations && this.profile.sprouts > 0 && srand.random.range(100) < this.sproutChance()) {
+      this.sprout();
+    }
+  },
+
+  // Update this branch
+  update: function(msDuration) {
+    if (this.profile.step_count >= this.profile.max_steps) return false;
+
+    this.last_position = this.position.slice(0);
+
+    if (this.delayed_callback) {
+      this.delayed_callback.call(this);
+      this.delayed_callback = null;
+    }
+
+    this.position = vectors.add(this.position, vectors.multiply(this.profile.velocity, msDuration));
+
+    //this.position[0] = Math.round(this.position[0]);
+    //this.position[1] = Math.round(this.position[1]);
+
+    if (this.hasArrivedAtDestination()) {
+      this.position = this.profile.destination.slice(0);
+      this.position = this.position;
+
+      this.delayed_callback = this.arrive;
+    }
+
+    // onGrow - callback
+    if (this.profile.onGrow) this.profile.onGrow.call(this, msDuration);
+  },
+
+  // Draw the branch
+  draw: function(background, foreground) {
+    // Moving vertically
+    if (this.profile.direction[0] == 0) {
+      gamejs.draw.line(background, this.profile.color, this.position, this.last_position, this.profile.width);
+
+    // Moving horizontally
+    } else {
+      var w = this.profile.width,
+          dy = this.profile.width;
+
+      if (w %2 == 0) w += 1;
+      dy = Math.floor(w * 0.5);
+
+      gamejs.draw.line(background, this.profile.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], w);
+    }
+  } 
+
+}; // End prototype
