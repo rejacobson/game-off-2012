@@ -4,7 +4,7 @@ var gamescreen = require('gamescreen').instance();
 var input = require('input');
 var collision = require('collision');
 var mob = require('mob');
-var tree = require('tree');
+var tree_species = require('tree_species');
 var dialog = require('dialog');
 var hud = require('hud');
 var storage = require('storage');
@@ -164,34 +164,40 @@ var SplashScene = exports.SplashScene = function() {
   var trunk,
       self = this,
       view_time = 0,
-      current_demo;
+      current_demo,
+      last_position;
 
-  var demos = [
-    { worldsize: [1800, 2000],
+  var demos = {
+    oak: { 
+      worldsize: [1800, 2000],
       seed_at: [900, 1900],
       type: 'Oak',
       view_time: 8
     },
 
-    { worldsize: [1400, 3400],
-      seed_at: [700, 3300],
+    pine: {
+      worldsize: [1400, 2400],
+      seed_at: [700, 2300],
       type: 'Pine',
       view_time: null
     },
 
-    { worldsize: [2400, 900],
+    willow: {
+      worldsize: [2400, 900],
       seed_at: [1200, 850],
       type: 'Willow',
       view_time: 4
     },
 
-    { worldsize: [1400, 2000],
+    down: { 
+      worldsize: [1400, 2000],
       seed_at: [700, 400],
       type: 'Down',
-      view_time: null
+      view_time: 8
     },
 
-    { worldsize: [1200, 700],
+    bonzai: { 
+      worldsize: [1200, 700],
       seed_at: [600, 500],
       type: 'Bonzai',
       settings: {
@@ -200,36 +206,37 @@ var SplashScene = exports.SplashScene = function() {
       view_time: null
     },
     
-    { worldsize: [1200, 700],
+    shrub: { 
+      worldsize: [1200, 700],
       seed_at: [600, 500],
       type: 'Shrub',
       view_time: null
     }
-  ];
+  };
 
   function pick_demo() {
-    return demos[demos.length-1];
-    var index = srand.random.range(demos.length - 1);
-    return demos[index];
+    return demos['down']; //demos.length-1];
+    var name = _.shuffle(_.keys(demos))[0]; //srand.random.range(demos.length - 1);
+    return demos[name];
   }
 
   function load_demo(demo) {
     current_demo = demo;
-    trunk = new tree[current_demo.type](current_demo.seed_at, current_demo.settings || {});
+    trunk = tree_species[current_demo.type](current_demo.seed_at, current_demo.settings || {});
     self.wakeup();
   }
 
   this.wakeup = function() {
     gamescreen.clear();
     gamescreen.levelSize(current_demo.worldsize); 
-    gamescreen.moveTo(trunk.branches()[0].position);
-    gamescreen.follow(trunk.branches()[0]);
+    gamescreen.moveTo(trunk.branches[0].position);
+    gamescreen.follow(trunk.branches[0]);
   }
 
   this.update = function(msDuration) {
     view_time += msDuration;
 
-    if (current_demo.view_time && view_time > current_demo.view_time) {
+    if (current_demo.view_time && (view_time > current_demo.view_time || !gamescreen.moving) ) {
       gamescreen.follow(trunk.getLastBranch());
       view_time = 0;
     }
@@ -238,13 +245,12 @@ var SplashScene = exports.SplashScene = function() {
     trunk.update(msDuration);
 
     if (trunk.finished()) {
-console.log('Tree is finished');
       load_demo(pick_demo());
     }
   }
 
   this.draw = function() {
-    trunk.draw(gamescreen.display('background'));
+    trunk.draw(gamescreen.display('background'), gamescreen.display('foreground'));
     //gamescreen.display('main').clear();
     //gamescreen.draw(gamescreen.display('main'));
   }

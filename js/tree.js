@@ -1,4 +1,5 @@
 var gamejs = require('gamejs');
+var tree_species = require('tree_species');
 var srand = require('srand');
 var util = require('util');
 var vectors = gamejs.utils.vectors;
@@ -6,182 +7,13 @@ var spritesheet = require('spritesheet');
 
 gamejs.preload(['images/leaves/summer.png']);
 
-
-var Oak = exports.Oak = function(seed, settings) {
-  var defaults = {
-    width: 25,
-    max_steps: 15,
-    direction: [0, -1],
-    trend: [0, -1],
-    momentum: 8,
-    sprouts: 6,
-    bounds: [null, 100, null, seed[1] - 100], // left, top, right, bottom
-    transform: function(branch) {
-      _.extend(branch.profile, {
-        max_steps: 15,
-        width: Math.max(Math.round(branch.profile.width * 0.2), 1),
-        momentum: 3,
-        sprouts: 2,
-        trend: branch.profile.direction
-      }); 
-
-      return branch;
-    }
-  };
-
-  settings = _.extend(defaults, settings);
-
-  return new Tree(seed, settings);
-}
-
-var Pine = exports.Pine = function(seed, settings) {
-  var defaults = {
-    width: 20,
-    max_steps: 30,
-    direction: [0, -1],
-    trend: [0, -1],
-    momentum: 12,
-    sprouts: 10,
-    bounds: [null, 100, null, seed[1] - 200], // left, top, right, bottom
-    transform: function(branch) {
-      _.extend(branch.profile, {
-        max_steps: 5,
-        width: Math.max(Math.round(branch.profile.width * 0.5), 1),
-        momentum: 5,
-        sprouts: 2,
-        trend: branch.profile.direction
-      }); 
-
-      return branch;
-    }
-  };
-
-  settings = _.extend(defaults, settings);
-
-  return new Tree(seed, settings);
-};
-
-var Willow = exports.Willow = function(seed, settings) {
-  var defaults = {
-    width: 15,
-    max_steps: 15,
-    direction: [0, -1],
-    trend: [0, -1],
-    momentum: 3,
-    sprouts: 7,
-    bounds: [null, 100, null, seed[1] - 50], // left, top, right, bottom
-    transform: function(branch) {
-      var sideways = branch.profile.direction[1] == 0;
-
-      _.extend(branch.profile, {
-        max_generations: 5,
-        max_steps: sideways ? 25 : 2,
-        width: branch.profile.generation == 1 ? 4 : Math.max(Math.round(branch.profile.width * 0.75), 1),
-        momentum: sideways ? 8 : 0,
-        sprouts: sideways ? 4 : 1,
-        trend: branch.profile.direction
-      }); 
-
-      return branch;
-    }
-  };
-
-  settings = _.extend(defaults, settings);
-
-  return new Tree(seed, settings);
-};
-
-var Down = exports.Down = function(seed, settings) {
-  var defaults = {
-    width: 20,
-    max_steps: 25,
-    direction: [0, -1],
-    trend: [0, 1],
-    momentum: 1,
-    sprouts: 6,
-    sprout_delay: 8,
-    bounds: [null, 100, null, null], // left, top, right, bottom
-    transform: function(branch) {
-      _.extend(branch.profile, {
-        max_steps: 15,
-        width: Math.max(Math.round(branch.profile.width * 0.5), 1),
-        momentum: 2,
-        sprouts: 2,
-        sprout_delay: 0,
-        trend: branch.profile.direction
-      }); 
-
-      return branch;
-    }
-  };
-
-  settings = _.extend(defaults, settings);
-
-  return new Tree(seed, settings);
-}
-
-
-var Bonzai = exports.Bonzai = function(seed, settings) {
-  var defaults = {
-    width: 1,
-    step: 10,
-    max_steps: 10,
-    direction: [0, -1],
-    trend: [0, -1],
-    momentum: 4,
-    sprouts: 4,
-    bounds: [null, 100, null, seed[1] - 10], // left, top, right, bottom
-    transform: function(branch) {
-      _.extend(branch.profile, {
-        max_steps: Math.ceil(branch.profile.max_steps * 0.75),
-        width: 1,
-        momentum: 3,
-        sprouts: 2,
-        trend: branch.profile.direction
-      }); 
-
-      return branch;
-    }
-  };
-
-  settings = _.extend(defaults, settings);
-
-  return new Tree(seed, settings);
-}
-
-var Shrub = exports.Shrub = function(seed, settings) {
-  var defaults = {
-    max_generations: 2,
-    width: 1,
-    step: 10,
-    max_steps: 2,
-    direction: [0, -1],
-    trend: [0, -1],
-    momentum: 1,
-    sprouts: 1,
-    bounds: [null, null, null, null], // left, top, right, bottom
-    transform: function(branch) {
-      _.extend(branch.profile, {
-        max_steps: Math.ceil(branch.profile.max_steps * 0.75),
-        width: 1,
-        momentum: 0,
-        sprouts: 1,
-        trend: branch.profile.direction
-      }); 
-
-      return branch;
-    }
-  };
-
-  settings = _.extend(defaults, settings);
-
-  return new Tree(seed, settings);
-}
+var LEAF = new gamejs.Rect([0, 0], [6, 6]);
 
 var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
   this.alive = true;
+  this.name = trunk_settings.name || 'Unknown';
+  this.branches = [];
 
-  var branches = [];
   var last_branch;
   var size = 0;
   var i, len;
@@ -193,19 +25,10 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
   _.extend(this, {
     
     eachBranch: function(callback) {
-      for (i=0, len=branches.length; i<len; ++i) {
-        if (!branches[i].alive) continue;
-        callback.call(this, branches[i]);
+      for (i=0, len=this.branches.length; i<len; ++i) {
+        if (!this.branches[i].alive) continue;
+        callback.call(this, this.branches[i]);
       }
-    },
-
-    branches: function() {
-      var b = [];
-      for (i=0, len=branches.length; i<len; ++i) {
-        if (!branches[i] || !branches[i].alive) continue;
-        b.push(branches[i]);
-      }
-      return b;
     },
 
     getLastBranch: function() {
@@ -218,7 +41,7 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
   
     addBranch: function(branch) {
       last_branch = branch;
-      branches.push(branch);
+      this.branches.push(branch);
       size++;
     },
 
@@ -228,11 +51,16 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
     },
   
     update: function(msDuration) {
-      if (this.finished()) return false;
+      if (this.finished() || !this.alive) {
+        this.alive = false;
+        return false;
+      }
 
-      for (i=0, len=branches.length; i<len; ++i) {
-        if (!branches[i].alive) continue;
-        if (false === branches[i].update(msDuration)) this.removeBranch(branches[i]);
+      for (i=0, len=this.branches.length; i<len; ++i) {
+        if (!this.branches[i].alive) continue;
+        if (false === this.branches[i].update(msDuration)) {
+          this.removeBranch(this.branches[i]);
+        }
       }
  
       if (this.finished()) {
@@ -241,9 +69,9 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
     },
     
     draw: function(background, foreground) {
-      for (i=0, len=branches.length; i<len; ++i) {
-        if (!branches[i].alive) continue;
-        branches[i].draw(background, foreground);
+      for (i=0, len=this.branches.length; i<len; ++i) {
+        if (!this.branches[i].alive) continue;
+        this.branches[i].draw(background, foreground);
       }
     }
   });
@@ -440,7 +268,7 @@ Branch.prototype = {
       sprout = this.sprout();
     }
 
-    if (this.profile.width == 1 && srand.random.range(100) > 70) {
+    if (this.profile.leaf_structure && this.profile.width == 1 && srand.random.range(100) > 70) {
       var directions = this.adjacentDirections().concat(direction);
   
       directions = _.reject(directions, function(i) { return i[0] == self.profile.direction[0] && i[1] == self.profile.direction[1]; });
@@ -451,17 +279,22 @@ Branch.prototype = {
 
       var dir = directions[srand.random.range(directions.length - 1)];
 
-      var bush = new Shrub(this.position, {
+      var bush = tree_species[this.profile.leaf_structure](this.position, {
         leaves: 'images/leaves/summer.png',
+        leaf_spread: [15, 15],
+        leaf_density: 3,
         direction: dir
       });
+
       this.tree.addBranch(bush);  
     } 
   },
 
   // Update this branch
   update: function(msDuration) {
-    if (this.profile.step_count >= this.profile.max_steps) return false;
+    if (this.profile.step_count >= this.profile.max_steps || isNaN(this.position[0]) || isNaN(this.position[1])) {
+      return false;
+    }
 
     this.last_position = this.position.slice(0);
 
@@ -474,8 +307,6 @@ Branch.prototype = {
 
     if (this.hasArrivedAtDestination()) {
       this.position = this.profile.destination.slice(0);
-      this.position = this.position;
-
       this.delayed_callback = this.arrive;
     }
 
@@ -500,23 +331,23 @@ Branch.prototype = {
       gamejs.draw.line(background, this.profile.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], w);
     }
 
-/*
     if (this.profile.width == 1 && this.profile.leaves) {
       var size = this.profile.leaves.size(),
-          num = srand.random.range(1), 
+          num = srand.random.range(this.profile.leaf_density || 2), 
           index = srand.random.range(num),
           leaf = this.profile.leaves.get(index),
-          rect = new gamejs.Rect([0, 0], [6, 6]),
-          dx, dy;
+          spread = this.profile.leaf_spread || [10, 10],
+          dx, dy, x, y;
 
       for (var i=0; i<num; ++i) {
-        dx = srand.random.range(-30, 30);
-        dy = srand.random.range(-30, 30);
-        rect.topleft = [this.position[0] + dx, this.position[1] + dy];
-        background.blit(leaf, rect);
+        dx = srand.random.range(-spread[0], spread[0]);
+        dy = srand.random.range(-spread[1], spread[1]);
+        x = Math.floor((this.position[0] + dx) / this.profile.step) * this.profile.step;
+        y = Math.floor((this.position[1] + dy) / this.profile.step) * this.profile.step;
+        LEAF.topleft = [x, y];
+        foreground.blit(leaf, LEAF);
       } 
     }
-*/
 
   } 
 

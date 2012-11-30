@@ -45,6 +45,8 @@ var GameScreen = function(screen_size) {
   this.track_tolerance = 100;
   
   this.layers = $('#layers');
+
+  this.moving = false;
   
   // Setup the dom elements
   _.each(_.keys(this.displays), function(d, index) {
@@ -104,12 +106,15 @@ GameScreen.prototype.moveTo = function(position) {
   var left = this.viewport.halfsize[0] - this.viewport.center[0],
       top = this.viewport.halfsize[1] - this.viewport.center[1];
 
-  //this.layers.css({left:parseInt(left), top:parseInt(top)});
   this.layers[0].style.left = parseInt(left)+'px';
   this.layers[0].style.top = parseInt(top)+'px';
+
+  this.moving = true;
 };
 
 GameScreen.prototype.update = function(msDuration) {
+  this.moving = false;
+
   if (!this.target) return;
   
   if (this.viewport.center != this.target.position) {
