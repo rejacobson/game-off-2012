@@ -6,6 +6,7 @@ var vectors = gamejs.utils.vectors;
 var spritesheet = require('spritesheet');
 
 gamejs.preload(['images/leaves/summer.png']);
+gamejs.preload(['images/leaves/autumn.png']);
 
 var LEAF = new gamejs.Rect([0, 0], [6, 6]);
 
@@ -280,7 +281,7 @@ Branch.prototype = {
       var dir = directions[srand.random.range(directions.length - 1)];
 
       var bush = tree_species[this.profile.leaf_structure](this.position, {
-        leaves: 'images/leaves/summer.png',
+        leaves: 'images/leaves/autumn.png',
         leaf_spread: [15, 15],
         leaf_density: 3,
         direction: dir

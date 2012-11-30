@@ -215,7 +215,7 @@ var SplashScene = exports.SplashScene = function() {
   };
 
   function pick_demo() {
-    return demos['down']; //demos.length-1];
+    //return demos['down']; //demos.length-1];
     var name = _.shuffle(_.keys(demos))[0]; //srand.random.range(demos.length - 1);
     return demos[name];
   }
