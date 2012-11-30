@@ -198,10 +198,17 @@ var SplashScene = exports.SplashScene = function() {
         max_steps: 100 
       },
       view_time: null
+    },
+    
+    { worldsize: [1200, 700],
+      seed_at: [600, 500],
+      type: 'Shrub',
+      view_time: null
     }
   ];
 
   function pick_demo() {
+    return demos[demos.length-1];
     var index = srand.random.range(demos.length - 1);
     return demos[index];
   }
@@ -231,6 +238,7 @@ var SplashScene = exports.SplashScene = function() {
     trunk.update(msDuration);
 
     if (trunk.finished()) {
+console.log('Tree is finished');
       load_demo(pick_demo());
     }
   }

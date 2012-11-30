@@ -2,6 +2,9 @@ var gamejs = require('gamejs');
 var srand = require('srand');
 var util = require('util');
 var vectors = gamejs.utils.vectors;
+var spritesheet = require('spritesheet');
+
+gamejs.preload(['images/leaves/summer.png']);
 
 
 var Oak = exports.Oak = function(seed, settings) {
@@ -16,7 +19,7 @@ var Oak = exports.Oak = function(seed, settings) {
     transform: function(branch) {
       _.extend(branch.profile, {
         max_steps: 15,
-        width: Math.max(Math.round(branch.profile.width * 0.5), 1),
+        width: Math.max(Math.round(branch.profile.width * 0.2), 1),
         momentum: 3,
         sprouts: 2,
         trend: branch.profile.direction
@@ -146,7 +149,38 @@ var Bonzai = exports.Bonzai = function(seed, settings) {
   return new Tree(seed, settings);
 }
 
+var Shrub = exports.Shrub = function(seed, settings) {
+  var defaults = {
+    max_generations: 2,
+    width: 1,
+    step: 10,
+    max_steps: 2,
+    direction: [0, -1],
+    trend: [0, -1],
+    momentum: 1,
+    sprouts: 1,
+    bounds: [null, null, null, null], // left, top, right, bottom
+    transform: function(branch) {
+      _.extend(branch.profile, {
+        max_steps: Math.ceil(branch.profile.max_steps * 0.75),
+        width: 1,
+        momentum: 0,
+        sprouts: 1,
+        trend: branch.profile.direction
+      }); 
+
+      return branch;
+    }
+  };
+
+  settings = _.extend(defaults, settings);
+
+  return new Tree(seed, settings);
+}
+
 var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
+  this.alive = true;
+
   var branches = [];
   var last_branch;
   var size = 0;
@@ -224,7 +258,13 @@ var Branch = function(tree, position, settings) {
   this.position = position.slice(0);
   this.last_position = position.slice(0);
 
+  if (typeof settings.leaves == 'string') {
+    settings.leaves = new spritesheet.SpriteSheet(settings.leaves, [6, 6]);
+  }
+
   this.profile = {
+    leaves: null,
+
     destination: [0, 0],
     velocity: [0, 0],
     
@@ -268,6 +308,7 @@ var Branch = function(tree, position, settings) {
 
 
 Branch.prototype = {
+
   setDirection: function(branch, dir) {
     var p = branch.profile;
     p.direction = dir;
@@ -344,6 +385,8 @@ Branch.prototype = {
     this.tree.addBranch(cloned_branch);
 
     this.profile.sprouts--;
+
+    return cloned_branch;
   },
 
   // Turn left or right
@@ -384,6 +427,8 @@ Branch.prototype = {
 
   // Turn or Sprout
   behave: function() {
+    var self = this, direction = this.profile.direction, sprout;
+
     if (this.profile.momentum <= 0 && srand.random.range(0, 100) > this.profile.turn_chance) {
       this.turn();
     } else {
@@ -392,8 +437,26 @@ Branch.prototype = {
     }
     
     if (this.profile.sprout_delay <= 0 && this.profile.generation < this.profile.max_generations && this.profile.sprouts > 0 && srand.random.range(100) < this.sproutChance()) {
-      this.sprout();
+      sprout = this.sprout();
     }
+
+    if (this.profile.width == 1 && srand.random.range(100) > 70) {
+      var directions = this.adjacentDirections().concat(direction);
+  
+      directions = _.reject(directions, function(i) { return i[0] == self.profile.direction[0] && i[1] == self.profile.direction[1]; });
+
+      if (sprout) {
+        directions = _.reject(directions, function(i) { return i[0] == sprout.profile.direction[0] && i[1] == sprout.profile.direction[1]; });
+      }
+
+      var dir = directions[srand.random.range(directions.length - 1)];
+
+      var bush = new Shrub(this.position, {
+        leaves: 'images/leaves/summer.png',
+        direction: dir
+      });
+      this.tree.addBranch(bush);  
+    } 
   },
 
   // Update this branch
@@ -408,9 +471,6 @@ Branch.prototype = {
     }
 
     this.position = vectors.add(this.position, vectors.multiply(this.profile.velocity, msDuration));
-
-    //this.position[0] = Math.round(this.position[0]);
-    //this.position[1] = Math.round(this.position[1]);
 
     if (this.hasArrivedAtDestination()) {
       this.position = this.profile.destination.slice(0);
@@ -439,6 +499,25 @@ Branch.prototype = {
 
       gamejs.draw.line(background, this.profile.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], w);
     }
+
+/*
+    if (this.profile.width == 1 && this.profile.leaves) {
+      var size = this.profile.leaves.size(),
+          num = srand.random.range(1), 
+          index = srand.random.range(num),
+          leaf = this.profile.leaves.get(index),
+          rect = new gamejs.Rect([0, 0], [6, 6]),
+          dx, dy;
+
+      for (var i=0; i<num; ++i) {
+        dx = srand.random.range(-30, 30);
+        dy = srand.random.range(-30, 30);
+        rect.topleft = [this.position[0] + dx, this.position[1] + dy];
+        background.blit(leaf, rect);
+      } 
+    }
+*/
+
   } 
 
 }; // End prototype

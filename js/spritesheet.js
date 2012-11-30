@@ -23,6 +23,11 @@ var SpriteSheet = exports.SpriteSheet = function(imagePath, frameSize) {
       }
     }
 };
+
+SpriteSheet.prototype.size = function() {
+  return this.surfaceCache.length;
+};
+
 SpriteSheet.prototype.get = function(id) {
   return this.surfaceCache[id];
 };
