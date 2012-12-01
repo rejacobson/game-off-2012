@@ -7,10 +7,13 @@ var spritesheet = require('spritesheet');
 
 gamejs.preload(['images/leaves/summer.png']);
 gamejs.preload(['images/leaves/autumn.png']);
+gamejs.preload(['images/leaves/spring.png']);
+
 
 var LEAF = new gamejs.Rect([0, 0], [6, 6]);
 
 var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
+console.log(on_finished);
   this.alive = true;
   this.name = trunk_settings.name || 'Unknown';
   this.branches = [];
@@ -65,6 +68,7 @@ var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
       }
  
       if (this.finished()) {
+console.log('Tree is finished');
         if (on_finished && _.isFunction(on_finished)) on_finished.call(this);
       }
     },
@@ -87,12 +91,17 @@ var Branch = function(tree, position, settings) {
   this.position = position.slice(0);
   this.last_position = position.slice(0);
 
-  if (typeof settings.leaves == 'string') {
-    settings.leaves = new spritesheet.SpriteSheet(settings.leaves, [6, 6]);
+  if (typeof settings.leaf_spritesheet == 'string') {
+    settings.leaf_spritesheet = new spritesheet.SpriteSheet(settings.leaf_spritesheet, [6, 6]);
   }
 
   this.profile = {
-    leaves: null,
+    leaf: null,
+
+    leaf_stucture: null,
+    leaf_spritesheet: null,
+    leaf_spread: [15, 15],
+    leaf_density: 3,
 
     destination: [0, 0],
     velocity: [0, 0],
@@ -269,7 +278,7 @@ Branch.prototype = {
       sprout = this.sprout();
     }
 
-    if (this.profile.leaf_structure && this.profile.width == 1 && srand.random.range(100) > 70) {
+    if (this.profile.leaf && this.profile.width == 1 && srand.random.range(100) > 70) {
       var directions = this.adjacentDirections().concat(direction);
   
       directions = _.reject(directions, function(i) { return i[0] == self.profile.direction[0] && i[1] == self.profile.direction[1]; });
@@ -280,10 +289,10 @@ Branch.prototype = {
 
       var dir = directions[srand.random.range(directions.length - 1)];
 
-      var bush = tree_species[this.profile.leaf_structure](this.position, {
-        leaves: 'images/leaves/autumn.png',
-        leaf_spread: [15, 15],
-        leaf_density: 3,
+      var bush = tree_species[this.profile.leaf.structure](this.position, {
+        leaf_spritesheet: this.profile.leaf.spritesheet,
+        leaf_spread: this.profile.leaf.spread,
+        leaf_density: this.profile.leaf.density,
         direction: dir
       });
 
@@ -332,11 +341,11 @@ Branch.prototype = {
       gamejs.draw.line(background, this.profile.color, [this.position[0], this.position[1] + dy], [this.last_position[0], this.last_position[1] + dy], w);
     }
 
-    if (this.profile.width == 1 && this.profile.leaves) {
-      var size = this.profile.leaves.size(),
+    if (this.profile.width == 1 && this.profile.leaf_spritesheet) {
+      var size = this.profile.leaf_spritesheet.size(),
           num = srand.random.range(this.profile.leaf_density || 2), 
-          index = srand.random.range(num),
-          leaf = this.profile.leaves.get(index),
+          index = srand.random.range(size - 1),
+          leaf = this.profile.leaf_spritesheet.get(index),
           spread = this.profile.leaf_spread || [10, 10],
           dx, dy, x, y;
 

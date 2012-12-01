@@ -1,7 +1,7 @@
 var gamejs = require('gamejs');
 var tree = require('tree');
 
-var Oak = exports.Oak = function(seed, settings) {
+var Oak = exports.Oak = function(seed, settings, finish) {
   var defaults = {
     name: 'Oak',
     leaf_structure: 'Shrub',
@@ -27,10 +27,10 @@ var Oak = exports.Oak = function(seed, settings) {
 
   settings = _.extend(defaults, settings);
 
-  return new tree.Tree(seed, settings);
+  return new tree.Tree(seed, settings, finish);
 }
 
-var Pine = exports.Pine = function(seed, settings) {
+var Pine = exports.Pine = function(seed, settings, finish) {
   var defaults = {
     name: 'Pine',
     leaf_structure: 'Shrub',
@@ -56,10 +56,10 @@ var Pine = exports.Pine = function(seed, settings) {
 
   settings = _.extend(defaults, settings);
 
-  return new tree.Tree(seed, settings);
+  return new tree.Tree(seed, settings, finish);
 };
 
-var Willow = exports.Willow = function(seed, settings) {
+var Willow = exports.Willow = function(seed, settings, finish) {
   var defaults = {
     name: 'Willow',
     leaf_structure: 'Shrub',
@@ -88,10 +88,10 @@ var Willow = exports.Willow = function(seed, settings) {
 
   settings = _.extend(defaults, settings);
 
-  return new tree.Tree(seed, settings);
+  return new tree.Tree(seed, settings, finish);
 };
 
-var Down = exports.Down = function(seed, settings) {
+var Down = exports.Down = function(seed, settings, finish) {
   var defaults = {
     name: 'Down',
     leaf_structure: 'Shrub',
@@ -119,11 +119,11 @@ var Down = exports.Down = function(seed, settings) {
 
   settings = _.extend(defaults, settings);
 
-  return new tree.Tree(seed, settings);
+  return new tree.Tree(seed, settings, finish);
 }
 
 
-var Bonzai = exports.Bonzai = function(seed, settings) {
+var Bonzai = exports.Bonzai = function(seed, settings, finish) {
   var defaults = {
     name: 'Bonzai',
     leaves: 'images/leaves/summer.png',
@@ -150,10 +150,10 @@ var Bonzai = exports.Bonzai = function(seed, settings) {
 
   settings = _.extend(defaults, settings);
 
-  return new tree.Tree(seed, settings);
+  return new tree.Tree(seed, settings, finish);
 }
 
-var Shrub = exports.Shrub = function(seed, settings) {
+var Shrub = exports.Shrub = function(seed, settings, finish) {
   var defaults = {
     name: 'Shrub',
     max_generations: 3,
@@ -180,6 +180,6 @@ var Shrub = exports.Shrub = function(seed, settings) {
 
   settings = _.extend(defaults, settings);
 
-  return new tree.Tree(seed, settings);
+  return new tree.Tree(seed, settings, finish);
 }
 

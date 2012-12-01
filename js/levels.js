@@ -1,10 +1,13 @@
 var gamejs = require('gamejs');
+var vectors = gamejs.utils.vectors;
+var util = require('util');
 var srand = require('srand');
 var platforms = require('partitions/platforms');
 var poles = require('partitions/poles');
 var entities = require('partitions/entities');
 var gamescreen = require('gamescreen').instance();
 var tree = require('tree');
+var tree_species = require('tree_species');
 var mob = require('mob');
 
 // Load a new level
@@ -50,7 +53,7 @@ var Level = exports.Level = function(settings) {
   this.insertGround(this.settings.ground);
 
   // Plant trees
-  this.plantTrees(this.settings.seeds);
+  this.plantTrees(this.settings.trees);
 
   // Insert the player into the world
   this.world.entities.insert(this.world.player);
@@ -103,9 +106,94 @@ Level.prototype.spawnPlayer = function() {
   this.world.player.position = this.settings.spawn.slice(0);
 };
 
-Level.prototype.plantTrees = function(seeds) {
-  var self = this;
+Level.prototype.plantTrees = function(trees) {
+  var self = this, tree;
 
+  var _defaults = {
+
+    // Called when a branch changes direction
+    onTurn: function() {
+      // Branched left or right
+      if (this.profile.direction[1] == 0) {
+//console.log('New Platform at: '+ vectors.toString(this.position));
+//console.log(this);
+        this.platform = new platforms.Platform(this.position[0], this.position[0], this.position[1]); 
+        self.world.platforms.insert(this.platform);
+
+//console.log(self.world.platforms);
+        if (this.pole) {
+          self.world.poles.mergeOverlapping(this.pole);
+          this.pole = null;
+        }
+
+
+      // Branched up or down
+      } else {
+        this.pole = new poles.Pole(this.position[1], this.position[1], this.position[0]); 
+        self.world.poles.insert(this.pole);
+
+        if (this.platform) {
+          self.world.platforms.mergeOverlapping(this.platform);
+          this.platform = null;
+        }
+      }
+    },
+
+    // Called when a branch is updated
+    onGrow: function(msDuration) {
+//console.log(this);
+      // Platform growth 
+      if (this.platform && this.profile.direction[1] == 0) {
+//console.log(vectors.toString(this.position));
+        // Growing right
+        if (this.profile.direction[0] > 0) {
+          if (this.platform.right < this.position[0]) {
+//console.log('changing platform');
+//console.log(this.platform.right);
+            this.platform.right = this.position[0];
+          }
+
+        // Growing left
+        } else {
+          if (this.platform.left > this.position[0]) this.platform.left = this.position[0];
+        }
+
+        // Spawn a monster
+        if (srand.random.range(1000) >= 995) {
+          var monster = self.mobs[ srand.random.range(self.mobs.length-1) ]; 
+          self.world.entities.insert( mob.factory(self.world, monster, {}, {position: [this.position[0], this.position[1]-2]}) );
+        } 
+      }
+
+      // Pole growth
+      if (this.pole && this.profile.direction[0] == 0) {
+        // Growing down
+        if (this.profile.direction[1] > 0) {
+          if (this.pole.bottom < this.position[1]) this.pole.bottom = this.position[1];
+
+        // Growing up
+        } else {
+          if (this.pole.top > this.position[1]) this.pole.top = this.position[1];
+        }
+      }
+    }
+
+  };
+
+
+  _.each(trees, function(opts, type) {
+    
+    tree = tree_species[type](opts.seed, _.extend(opts.settings, _defaults), function() {
+console.log(self.world.platforms);
+      // Begin testing for the end of the level
+      self.testing_finished_state = true;
+    }); 
+
+    self.world.trees.push(tree);
+
+  });
+
+/*
   // Plant trees
   _.each(seeds, function(s) {
     self.world.trees.push(plantTree(self.world, s, {
@@ -128,6 +216,8 @@ Level.prototype.plantTrees = function(seeds) {
 
     })); 
   });
+*/
+
 };
 
 
@@ -137,12 +227,24 @@ levels['level1'] = {
   worldsize: [2000, 800],
   spawn: [800, 700],
   ground: [[600, 1400, 700], [300, 700, 600]],  // First one is always the spawn point
-  seeds: [[1000, 700]],
   mobs: {
     'buggaloo': 15,
     'bunny': 15,
     'gazer': 5
-  }
+  },
+  trees: {
+    'Oak': { 
+      seed: [1000, 700],
+      settings: {
+        leaf: {
+          structure: 'Shrub',
+          spritesheet: 'images/leaves/summer.png',
+          density: 3,
+          spread: [15, 15]
+        }
+      }
+    }
+  },
 };
 
 levels['level2'] = {
@@ -159,8 +261,9 @@ levels['level2'] = {
 
 
 
+
+/*
 var plantTree = function(world, position, settings) {
-console.log('Plant Tree');
   var rules = _.extend({
     onFinished: null,
 
@@ -175,7 +278,7 @@ console.log('Plant Tree');
     onFinished: rules.onFinished,
 
     // Called when a branch changes direction
-    onBranch: function() {
+    onTurn: function() {
 
       // Branched left or right
       if (this.direction[1] == 0) {
@@ -240,4 +343,4 @@ console.log('Plant Tree');
     }
   });
 };
-
+*/

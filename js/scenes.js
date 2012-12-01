@@ -139,7 +139,7 @@ var GameScene = exports.GameScene = function(game, level_number) {
   /////////////////////////
   this.draw = function() {
     for (var i = 0, len = world.trees.length; i<len; ++i) {
-      world.trees[i].draw(gamescreen.display('background'));
+      world.trees[i].draw(gamescreen.display('background'), gamescreen.display('foreground'));
     };
 
     world.platforms.draw(gamescreen.display('background'));
@@ -172,7 +172,15 @@ var SplashScene = exports.SplashScene = function() {
       worldsize: [1800, 2000],
       seed_at: [900, 1900],
       type: 'Oak',
-      view_time: 8
+      view_time: 8,
+      settings: {
+        leaf: {
+          structure: 'Shrub',
+          spritesheet: 'images/leaves/summer.png',
+          density: 3,
+          spread: [15, 15]
+        }
+      }
     },
 
     pine: {
@@ -215,7 +223,7 @@ var SplashScene = exports.SplashScene = function() {
   };
 
   function pick_demo() {
-    //return demos['down']; //demos.length-1];
+    return demos['oak']; //demos.length-1];
     var name = _.shuffle(_.keys(demos))[0]; //srand.random.range(demos.length - 1);
     return demos[name];
   }
