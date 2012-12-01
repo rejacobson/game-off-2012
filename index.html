@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8" />
+
+<title>Get Out of My Tree</title>
+
+<link rel="stylesheet" type="text/css" href="/css/style.css" />
+<link rel="stylesheet" type="text/css" href="/css/dialog.css" />
+
+<script type="text/javascript" src="/public/jquery.min.js"></script>
+<script type="text/javascript" src="/public/underscore-min.js"></script>
+<script type="text/javascript" src="/public/handlebars.js"></script>
+<script type="text/javascript" src="/public/yabble.js"></script>
+<script type="text/javascript" src="/public/gamejs.min.js"></script>
+
+<script type="text/javascript">
+  require.setModuleRoot('./js/');
+
+  $(document).ready(function(){
+    require.run('main')
+  });
+</script>
+
+<script type="text/x-handlebars-template" id="level-button-template">
+  <div class="level {{locked}}">
+    <h1>{{level}}</h1>
+
+    {{#unless locked}}
+    {{#if points}}
+    <div class="meta">
+      <span class="points">{{points}}</span>
+      <span class="multiplier">x{{multiplier}}</span>
+      <span class="time">{{time}}</span>
+    </div>
+    {{/if}}
+    {{/unless}}
+  </div>
+</script>
+
+<script type="text/x-handlebars-template" id="scorecard-template">
+  <table>
+  <tr>
+    <td>Points</td>
+    <td>{{points}}</td>
+    <td>{{#if points_new_record}}New Record!{{/if}}</td>
+  </tr>
+  <tr>
+    <td>Time</td>
+    <td>{{time}}</td>
+    <td>{{#if time_new_record}}New Record!{{/if}}</td>
+  </tr>
+  <tr>
+    <td>Multiplier</td>
+    <td>x{{multiplier}}</td>
+    <td>{{#if multiplier_new_record}}New Record!{{/if}}</td>
+  </tr>
+  </table>
+</script>
+
+</head>
+<body>
+
+  <div id="viewport">
+    <div id="layers">
+      <canvas id="background"></canvas>
+      <canvas id="main"></canvas>
+      <canvas id="foreground"></canvas>
+    </div>
+    <canvas id="hud"></canvas>
+    <div id="hud-overlay">
+      <h1 id="points">0</h1>
+    </div>
+
+    <div id="gui">
+      <div id="splash" class="dialog">
+        <h1>Get Out of My Tree!</h1>
+
+        <div class="buttons">
+          <a class="btn btnLevels" href="javascript:void(0);">Play</a>
+          <a class="btn btnInstructions" href="javascript:void(0);">Instructions</a>
+        </div>
+      </div>
+
+      <div id="levels" class="dialog">
+        <h1>Select a Level</h1>
+
+        <h3>Summer</h3>
+          <div id="level-1" class="levelButton"></div>
+          <div id="level-2" class="levelButton"></div>
+          <div id="level-3" class="levelButton"></div>
+          <div id="level-4" class="levelButton"></div>
+          <br class="clear" />
+
+        <h3>Autumn</h3>
+          <div id="level-5" class="levelButton"></div>
+          <div id="level-6" class="levelButton"></div>
+          <div id="level-7" class="levelButton"></div>
+          <div id="level-8" class="levelButton"></div>
+          <br class="clear" />
+
+        <h3>Winter</h3>
+          <div id="level-9" class="levelButton"></div>
+          <div id="level-10" class="levelButton"></div>
+          <div id="level-11" class="levelButton"></div>
+          <div id="level-12" class="levelButton"></div>
+          <br class="clear" />
+
+        <h3>Spring</h3>
+          <div id="level-13" class="levelButton"></div>
+          <div id="level-14" class="levelButton"></div>
+          <div id="level-15" class="levelButton"></div>
+          <div id="level-16" class="levelButton"></div>
+
+        <div class="buttons">
+          <a class="btn btnSplash" href="javascript:void(0);">Back</a>
+        </div>
+      </div>
+
+      <div id="instructions" class="dialog">
+        <h1>How to Play</h1>
+
+        <p>In non malesuada lorem. Nam tempus malesuada arcu vel congue. Aenean cursus tincidunt sem at sollicitudin. Aliquam ac lectus sit amet purus posuere bibendum eget in purus. Aenean pharetra libero et ipsum scelerisque tristique. Sed ut nulla ac mi rhoncus laoreet. Vivamus erat leo, sagittis vel malesuada congue, semper id tellus. Nullam pharetra enim et lorem lacinia varius. </p>
+
+        <div class="buttons">
+          <a class="btn btnSplash" href="javascript:void(0);">Back</a>
+        </div>
+      </div>
+
+      <div id="win" class="dialog">
+        <h1>Level Complete</h1>
+
+        <div id="scorecard"></div>
+ 
+        <div class="buttons">
+          <a class="btn btnNextLevel" href="javascript:void(0);">Next</a>
+          <a class="btn btnLevels" href="javascript:void(0);">Select a Level</a>
+        </div>
+      </div>
+
+      <div id="lose" class="dialog">
+        <h1>You Lose!</h1>
+        
+        <div class="buttons">
+          <a class="btn btnTryAgain" href="javascript:void(0);">Try Again</a>
+          <a class="btn btnLevels" href="javascript:void(0);">Select a Level</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
