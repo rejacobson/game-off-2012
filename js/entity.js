@@ -139,12 +139,14 @@ Creature.prototype.update = function(msDuration) {
 
 Creature.prototype.draw = function(display) {
   this.animation.draw(display, this.position);
+/*
   if (this.platform) {
     gamejs.draw.line(display, '#00ff00', [this.platform.left, this.platform.top], [this.platform.right, this.platform.top], 2);
   }
   if (this.pole) {
     gamejs.draw.line(display, '#00ff00', [this.pole.left, this.pole.top], [this.pole.left, this.pole.bottom], 2);
   }
+*/
   gamejs.draw.rect(display, '#ffff00', this.hitbox, 1);
 };
 

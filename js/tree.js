@@ -13,7 +13,6 @@ gamejs.preload(['images/leaves/spring.png']);
 var LEAF = new gamejs.Rect([0, 0], [6, 6]);
 
 var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
-console.log(on_finished);
   this.alive = true;
   this.name = trunk_settings.name || 'Unknown';
   this.branches = [];
@@ -44,6 +43,11 @@ console.log(on_finished);
     },
   
     addBranch: function(branch) {
+      if (branch.profile && branch.profile.onSprout) {
+        // onSprout - callback
+        if (false === branch.profile.onSprout.call(branch, branch.profile.direction, branch.profile.destination)) return false;
+      }
+
       last_branch = branch;
       this.branches.push(branch);
       size++;
@@ -68,7 +72,6 @@ console.log(on_finished);
       }
  
       if (this.finished()) {
-console.log('Tree is finished');
         if (on_finished && _.isFunction(on_finished)) on_finished.call(this);
       }
     },
@@ -217,9 +220,6 @@ Branch.prototype = {
 
     cloned_branch = this.transform(cloned_branch); 
     
-    // onSprout - callback
-    if (this.profile.onSprout && false === this.profile.onSprout.call(this, cloned_branch)) return false;
-
     this.tree.addBranch(cloned_branch);
 
     this.profile.sprouts--;
@@ -315,13 +315,13 @@ Branch.prototype = {
 
     this.position = vectors.add(this.position, vectors.multiply(this.profile.velocity, msDuration));
 
+    // onGrow - callback
+    if (this.profile.onGrow) this.profile.onGrow.call(this, msDuration);
+
     if (this.hasArrivedAtDestination()) {
       this.position = this.profile.destination.slice(0);
       this.delayed_callback = this.arrive;
     }
-
-    // onGrow - callback
-    if (this.profile.onGrow) this.profile.onGrow.call(this, msDuration);
   },
 
   // Draw the branch

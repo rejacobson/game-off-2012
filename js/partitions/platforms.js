@@ -79,6 +79,6 @@ Platform.prototype.width = function() {
 };
 
 Platform.prototype.draw = function(display) {
-  gamejs.draw.line(display, '#ff0000', [this.left, this.top], [this.right, this.top], 1);
+  gamejs.draw.line(display, '#692B05', [this.left, this.top], [this.right, this.top], 1);
 };
 

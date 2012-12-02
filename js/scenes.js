@@ -167,20 +167,45 @@ var SplashScene = exports.SplashScene = function() {
       current_demo,
       last_position;
 
+  var seasons = {
+    'summer': {
+      leaf: {
+        structure: 'Shrub',
+        spritesheet: 'images/leaves/summer.png',
+        density: 3,
+        spread: [15, 15]
+      }
+    },
+
+    'autumn': {
+      leaf: {
+        structure: 'Shrub',
+        spritesheet: 'images/leaves/autumn.png',
+        density: 2,
+        spread: [20, 20]
+      }
+    },
+
+    'winter': {
+
+    },
+
+    'spring': {
+      leaf: {
+        structure: 'Shrub',
+        spritesheet: 'images/leaves/spring.png',
+        density: 4,
+        spread: [30, 30]
+      }
+    }
+  };
+
   var demos = {
     oak: { 
       worldsize: [1800, 2000],
       seed_at: [900, 1900],
       type: 'Oak',
       view_time: 8,
-      settings: {
-        leaf: {
-          structure: 'Shrub',
-          spritesheet: 'images/leaves/summer.png',
-          density: 3,
-          spread: [15, 15]
-        }
-      }
     },
 
     pine: {
@@ -223,9 +248,13 @@ var SplashScene = exports.SplashScene = function() {
   };
 
   function pick_demo() {
-    return demos['oak']; //demos.length-1];
-    var name = _.shuffle(_.keys(demos))[0]; //srand.random.range(demos.length - 1);
-    return demos[name];
+    //return demos['oak']; //demos.length-1];
+    var name = _.shuffle(_.keys(demos))[0];
+    var season = _.shuffle(_.keys(seasons))[0];
+    var tree_type = _.clone(demos[name]);
+    if (!tree_type.settings) tree_type.settings = {};
+    _.extend(tree_type.settings, seasons[season]);
+    return tree_type;
   }
 
   function load_demo(demo) {

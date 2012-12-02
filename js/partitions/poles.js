@@ -69,10 +69,11 @@ PoleManager.prototype.draw = function(display) {
 
 
 
-var Pole = exports.Pole = function(top, bottom, left, settings) {
+var Pole = exports.Pole = function(top, bottom, left, width, settings) {
   this.top = top;
   this.bottom = bottom;
   this.left = left;
+  this.width = width || 1;
 
   var defaults = { };
 
@@ -84,6 +85,6 @@ Pole.prototype.height = function() {
 };
 
 Pole.prototype.draw = function(display) {
-  gamejs.draw.line(display, '#0000ff', [this.left, this.top], [this.left, this.bottom], 1);
+  gamejs.draw.line(display, '#692B05', [this.left, this.top], [this.left, this.bottom], this.width);
 };
 

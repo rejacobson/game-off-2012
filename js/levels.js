@@ -12,8 +12,6 @@ var mob = require('mob');
 
 // Load a new level
 exports.load = function(level) {
-console.log('Loading leve: '+level);
-console.log(levels[level]);
   return new Level(levels[level]); 
 };
 
@@ -110,17 +108,18 @@ Level.prototype.plantTrees = function(trees) {
   var self = this, tree;
 
   var _defaults = {
+    onSprout: function(new_direction, new_destination) {
+      this.profile.onTurn.call(this, new_direction, new_destination);
+    },
 
     // Called when a branch changes direction
-    onTurn: function() {
+    onTurn: function(new_direction, new_destination) {
+
       // Branched left or right
-      if (this.profile.direction[1] == 0) {
-//console.log('New Platform at: '+ vectors.toString(this.position));
-//console.log(this);
+      if (new_direction[1] == 0) {
         this.platform = new platforms.Platform(this.position[0], this.position[0], this.position[1]); 
         self.world.platforms.insert(this.platform);
 
-//console.log(self.world.platforms);
         if (this.pole) {
           self.world.poles.mergeOverlapping(this.pole);
           this.pole = null;
@@ -129,7 +128,7 @@ Level.prototype.plantTrees = function(trees) {
 
       // Branched up or down
       } else {
-        this.pole = new poles.Pole(this.position[1], this.position[1], this.position[0]); 
+        this.pole = new poles.Pole(this.position[1], this.position[1], this.position[0], Math.max(Math.floor(this.profile.width * 0.25))); 
         self.world.poles.insert(this.pole);
 
         if (this.platform) {
@@ -141,15 +140,12 @@ Level.prototype.plantTrees = function(trees) {
 
     // Called when a branch is updated
     onGrow: function(msDuration) {
-//console.log(this);
+
       // Platform growth 
       if (this.platform && this.profile.direction[1] == 0) {
-//console.log(vectors.toString(this.position));
         // Growing right
         if (this.profile.direction[0] > 0) {
           if (this.platform.right < this.position[0]) {
-//console.log('changing platform');
-//console.log(this.platform.right);
             this.platform.right = this.position[0];
           }
 
@@ -184,7 +180,6 @@ Level.prototype.plantTrees = function(trees) {
   _.each(trees, function(opts, type) {
     
     tree = tree_species[type](opts.seed, _.extend(opts.settings, _defaults), function() {
-console.log(self.world.platforms);
       // Begin testing for the end of the level
       self.testing_finished_state = true;
     }); 
