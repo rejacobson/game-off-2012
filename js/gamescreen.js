@@ -89,17 +89,7 @@ GameScreen.prototype.moveTo = function(position) {
   // create a copy of the position, as it could be modified
   var moveto = position.slice(0);
 
-  if (moveto[0] > this.viewport.slot.right) {
-    moveto[0] = this.viewport.slot.right;
-  } else if (moveto[0] < this.viewport.slot.left) {
-    moveto[0] = this.viewport.slot.left;
-  }
-
-  if (moveto[1] > this.viewport.slot.bottom) {
-    moveto[1] = this.viewport.slot.bottom;
-  } else if (moveto[1] < this.viewport.slot.top) {
-    moveto[1] = this.viewport.slot.top;
-  }
+  this.stayInBounds(moveto);
   
   this.viewport.center = moveto;
 
@@ -112,21 +102,53 @@ GameScreen.prototype.moveTo = function(position) {
   this.moving = true;
 };
 
+GameScreen.prototype.stayInBounds = function(position) {
+  if (position[0] > this.viewport.slot.right) {
+    position[0] = this.viewport.slot.right;
+  } else if (position[0] < this.viewport.slot.left) {
+    position[0] = this.viewport.slot.left;
+  }
+
+  if (position[1] > this.viewport.slot.bottom) {
+    position[1] = this.viewport.slot.bottom;
+  } else if (position[1] < this.viewport.slot.top) {
+    position[1] = this.viewport.slot.top;
+  }
+};
+
+var new_position = [0, 0], center;
+GameScreen.prototype.moveBy = function(vector) {
+  center = this.viewport.center;
+
+  new_position[0] = center[0] + vector[0];
+  new_position[1] = center[1] + vector[1];
+   
+  this.stayInBounds(new_position);
+
+  this.viewport.center = new_position;
+   
+  this.layers[0].style.left = parseInt(this.viewport.halfsize[0] - new_position[0])+'px';
+  this.layers[0].style.top = parseInt(this.viewport.halfsize[1] - new_position[1])+'px';
+
+  this.moving = true;
+};
+
+var distance_sq, direction, vector = [0, 0];
+
 GameScreen.prototype.update = function(msDuration) {
   this.moving = false;
 
   if (!this.target) return;
   
   if (this.viewport.center != this.target.position) {
-    var distance = vectors.distance(this.target.position, this.viewport.center);
+    distance_sq = vectors.distance_sq(this.target.position, this.viewport.center); 
 
-    if (distance < this.track_tolerance) return;
- 
-    var direction = vectors.unit(vectors.subtract(this.target.position, this.viewport.center)),
-        vector = vectors.multiply(direction, distance * msDuration),
-        position = vectors.add(this.viewport.center, vector);
-    
-    this.moveTo(position);
+    if (distance_sq < Math.pow(this.track_tolerance, 2)) return;
+
+    direction = vectors.unit(vectors.subtract(this.target.position, this.viewport.center));
+    vector[0] = direction[0] * 100 * msDuration;
+    vector[1] = direction[1] * 100 * msDuration;
+    this.moveBy(vector); 
   }
 };
 

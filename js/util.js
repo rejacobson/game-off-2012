@@ -10,7 +10,7 @@ vectors.len_sq = function(v) {
 };
 
 vectors.distance_sq = function(a, b) {
-  vectors.len_sq(vectors.subtract(a, b)); 
+  return Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2);
 };
 
 vectors.leftNormal = function(v) {
