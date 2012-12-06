@@ -4,6 +4,7 @@ var gamescreen = require('gamescreen').instance();
 var input = require('input');
 var collision = require('collision');
 var mob = require('mob');
+var tree = require('tree');
 var tree_species = require('tree_species');
 var dialog = require('dialog');
 var hud = require('hud');
@@ -172,8 +173,8 @@ var SplashScene = exports.SplashScene = function() {
       leaf: {
         structure: 'Shrub',
         spritesheet: 'images/leaves/summer.png',
-        density: 3,
-        spread: [15, 15]
+        density: 12,
+        spread: [10, 10]
       }
     },
 
@@ -181,13 +182,9 @@ var SplashScene = exports.SplashScene = function() {
       leaf: {
         structure: 'Shrub',
         spritesheet: 'images/leaves/autumn.png',
-        density: 2,
-        spread: [20, 20]
+        density: 1,
+        spread: [50, 50]
       }
-    },
-
-    'winter': {
-
     },
 
     'spring': {
@@ -195,7 +192,7 @@ var SplashScene = exports.SplashScene = function() {
         structure: 'Shrub',
         spritesheet: 'images/leaves/spring.png',
         density: 4,
-        spread: [30, 30]
+        spread: [20, 20]
       }
     }
   };
@@ -237,13 +234,6 @@ var SplashScene = exports.SplashScene = function() {
         max_steps: 100 
       },
       view_time: null
-    },
-    
-    shrub: { 
-      worldsize: [1200, 700],
-      seed_at: [600, 500],
-      type: 'Shrub',
-      view_time: null
     }
   };
 
@@ -260,6 +250,7 @@ var SplashScene = exports.SplashScene = function() {
   function load_demo(demo) {
     current_demo = demo;
     trunk = tree_species[current_demo.type](current_demo.seed_at, current_demo.settings || {});
+    tree.reset();
     self.wakeup();
   }
 

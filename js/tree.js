@@ -12,7 +12,14 @@ gamejs.preload(['images/leaves/spring.png']);
 
 var LEAF = new gamejs.Rect([0, 0], [6, 6]);
 
+var LEAF_CACHE = {};
+
+var reset = exports.reset = function() {
+  LEAF_CACHE = {};
+};
+
 var Tree = exports.Tree = function(seed, trunk_settings, on_finished) {
+  this.LEAF_CACHE = {};
   this.alive = true;
   this.name = trunk_settings.name || 'Unknown';
   this.branches = [];
@@ -354,6 +361,10 @@ Branch.prototype = {
         dy = srand.random.range(-spread[1], spread[1]);
         x = Math.floor((this.position[0] + dx) / this.profile.step) * this.profile.step;
         y = Math.floor((this.position[1] + dy) / this.profile.step) * this.profile.step;
+
+        if (LEAF_CACHE[x+':'+y]) continue;
+        LEAF_CACHE[x+':'+y] = leaf;
+
         LEAF.topleft = [x, y];
         foreground.blit(leaf, LEAF);
       } 

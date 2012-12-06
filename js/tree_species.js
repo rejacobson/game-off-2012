@@ -44,7 +44,7 @@ var Pine = exports.Pine = function(seed, settings, finish) {
     transform: function(branch) {
       _.extend(branch.profile, {
         max_steps: 5,
-        width: Math.max(Math.floor(branch.profile.width * 0.5), 1),
+        width: Math.max(Math.floor(branch.profile.width * 0.2), 1),
         momentum: 5,
         sprouts: 2,
         trend: branch.profile.direction
