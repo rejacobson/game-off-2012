@@ -35,7 +35,7 @@ function endOfGameTally(level, player, ms_start, ms_end) {
 
     points_new_record: score.points > level_data.points,
     multiplier_new_record: score.multiplier > level_data.multiplier,
-    time_new_record: time.total < level_data.time
+    time_new_record: !level_data.time || time.total < level_data.time
   };
 };
 
@@ -53,7 +53,7 @@ function scoreCard(level, player, ms_start, ms_end) {
 // Only save the better scores
 function saveScoreCard(level, score) {
   if (!score.points_new_record) delete score.points;
-  if (!score.multilplier_new_record) delete score.multiplier;
+  if (!score.multiplier_new_record) delete score.multiplier;
   if (!score.time_new_record) delete score.time;
   storage.saveLevel(level, score);
 };
