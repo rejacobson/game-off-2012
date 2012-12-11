@@ -1,0 +1,25 @@
+#hud {
+  z-index: 4;
+  position: absolute;
+  left: 0:
+  top: 0;
+  color: #D92332;
+}
+
+#hud h1 {
+  padding: 10px;
+}
+
+#combo_meter {
+  height: 64px;
+  width: 64px;
+  position: relative;
+}
+
+#meter {
+  /*background: transparent url('/images/combometer.png') no-repeat center bottom;*/
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+}

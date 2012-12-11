@@ -296,12 +296,9 @@ Branch.prototype = {
 
       var dir = directions[srand.random.range(directions.length - 1)];
 
-      var bush = tree_species[this.profile.leaf.structure](this.position, {
-        leaf_spritesheet: this.profile.leaf.spritesheet,
-        leaf_spread: this.profile.leaf.spread,
-        leaf_density: this.profile.leaf.density,
-        direction: dir
-      });
+      var settings = _.extend({direction: dir}, this.profile.leaf);
+
+      var bush = tree_species[this.profile.leaf.leaf_structure](this.position, settings);
 
       this.tree.addBranch(bush);  
     } 

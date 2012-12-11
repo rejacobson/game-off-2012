@@ -29,18 +29,3 @@ canvas#background {
 }
 
 
-/**
- * HUD Overlay
- */
-#hud-overlay {
-  z-index: 4;
-  position: absolute;
-  left: 0:
-  top: 0;
-  color: #D92332;
-}
-
-#hud-overlay #points {
-  padding: 10px;
-}
-

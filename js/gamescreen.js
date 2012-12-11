@@ -9,7 +9,6 @@ var canvas = require('canvas');
     <canvas id="main"></canvas>
     <canvas id="foreground"></canvas>
   </div>
-  <canvas id="hud"></canvas>
 </div>
 */
 
@@ -35,7 +34,6 @@ var GameScreen = function(screen_size) {
     background: canvas.register('background', screen_size),
     main: canvas.register('main', screen_size),
     foreground: canvas.register('foreground', screen_size),
-    hud: canvas.register('hud', screen_size)
   };
   
   this.target = null;  // An entity, or an object with a 'position' property, to track

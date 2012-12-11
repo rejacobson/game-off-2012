@@ -43,6 +43,7 @@ var Pine = exports.Pine = function(seed, settings, finish) {
     bounds: [null, 100, null, seed[1] - 200], // left, top, right, bottom
     transform: function(branch) {
       _.extend(branch.profile, {
+        max_generations: 4,
         max_steps: 5,
         width: Math.max(Math.floor(branch.profile.width * 0.2), 1),
         momentum: 5,
@@ -183,3 +184,33 @@ var Shrub = exports.Shrub = function(seed, settings, finish) {
   return new tree.Tree(seed, settings, finish);
 }
 
+
+var Bush = exports.Bush = function(seed, settings, finish) {
+  var defaults = {
+    name: 'Bush',
+    max_generations: 3,
+    width: 1,
+    step: 15,
+    max_steps: 3,
+    direction: [0, -1],
+    trend: [0, -1],
+    momentum: 2,
+    sprouts: 2,
+    bounds: [null, null, null, null], // left, top, right, bottom
+    transform: function(branch) {
+      _.extend(branch.profile, {
+        max_steps: Math.ceil(branch.profile.max_steps * 0.75),
+        width: 1,
+        momentum: 1,
+        sprouts: 1,
+        trend: branch.profile.direction
+      }); 
+
+      return branch;
+    }
+  };
+
+  settings = _.extend(defaults, settings);
+
+  return new tree.Tree(seed, settings, finish);
+}

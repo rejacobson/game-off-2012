@@ -8,6 +8,7 @@
 
 <link rel="stylesheet" type="text/css" href="/css/style.css" />
 <link rel="stylesheet" type="text/css" href="/css/dialog.css" />
+<link rel="stylesheet" type="text/css" href="/css/hud.css" />
 
 <script type="text/javascript" src="/public/jquery.min.js"></script>
 <script type="text/javascript" src="/public/underscore-min.js"></script>
@@ -68,9 +69,13 @@
       <canvas id="main"></canvas>
       <canvas id="foreground"></canvas>
     </div>
-    <canvas id="hud"></canvas>
-    <div id="hud-overlay">
+
+    <div id="hud">
       <h1 id="points">0</h1>
+      <h1 id="multiplier">0</h1>
+      <h1 id="combo_meter">
+        <img id="meter" src="/images/combometer.png" />
+      </h1>
     </div>
 
     <div id="gui">

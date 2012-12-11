@@ -52,9 +52,10 @@ var Counter = exports.Counter = function() {
     total: function() {
       return points;
     },
-    
-    combo: function() {
+
+    status: function() {
       return {
+        points: this.total(),
         multiplier: combo.multiplier(),
         remaining: combo.remaining()
       };

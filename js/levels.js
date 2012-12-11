@@ -188,31 +188,6 @@ Level.prototype.plantTrees = function(trees) {
 
   });
 
-/*
-  // Plant trees
-  _.each(seeds, function(s) {
-    self.world.trees.push(plantTree(self.world, s, {
-      onFinished: function() {
-        // Begin testing for the end of the level
-        self.testing_finished_state = true;
-      },
-
-      onGrowHorizontal: function(platform, direction) {
-        //
-        // Randomly spawn a monster
-        //
-        if (srand.random.range(1000) >= 995) {
-
-          // Spawn a monster
-          var monster = self.mobs[ srand.random.range(self.mobs.length-1) ]; 
-          self.world.entities.insert( mob.factory(self.world, monster, {}, {position: [this.position[0], this.position[1]-2]}) );
-        } 
-      }
-
-    })); 
-  });
-*/
-
 };
 
 
@@ -232,10 +207,10 @@ levels['level1'] = {
       seed: [1000, 700],
       settings: {
         leaf: {
-          structure: 'Shrub',
-          spritesheet: 'images/leaves/summer.png',
-          density: 3,
-          spread: [15, 15]
+          leaf_structure: 'Shrub',
+          leaf_spritesheet: 'images/leaves/summer.png',
+          leaf_density: 3,
+          leaf_spread: [15, 15]
         }
       }
     }
@@ -255,87 +230,3 @@ levels['level2'] = {
 };
 
 
-
-
-/*
-var plantTree = function(world, position, settings) {
-  var rules = _.extend({
-    onFinished: null,
-
-    onBranchHorizontal: null,
-    onBranchVertical: null,
-
-    onGrowHorizontal: null,
-    onGrowVertical: null
-  }, settings);
-
-  return new tree.Tree(position, {
-    onFinished: rules.onFinished,
-
-    // Called when a branch changes direction
-    onTurn: function() {
-
-      // Branched left or right
-      if (this.direction[1] == 0) {
-        this.platform = new platforms.Platform(this.position[0], this.position[0], this.position[1]); 
-        world.platforms.insert(this.platform);
-
-        if (rules.onBranchHorizontal) rules.onBranchHorizontal.call(this, this.platform, this.pole, this.direction);
-
-        if (this.pole) {
-          world.poles.mergeOverlapping(this.pole);
-          this.pole = null;
-        }
-
-
-      // Branched up or down
-      } else {
-        this.pole = new poles.Pole(this.position[1], this.position[1], this.position[0]); 
-        world.poles.insert(this.pole);
-
-        if (rules.onBranchVertical) rules.onBranchVertical.call(this, this.pole, this.platform, this.direction);
-
-        if (this.platform) {
-          world.platforms.mergeOverlapping(this.platform);
-          this.platform = null;
-        }
-        
-      }
-
-    },
-
-    // Called when a branch is updated
-    onGrow: function(msDuration) {
-
-      // Platform growth 
-      if (this.platform && this.direction[1] == 0) {
-        // Growing right
-        if (this.direction[0] > 0) {
-          if (this.platform.right < this.position[0]) this.platform.right = this.position[0];
-
-        // Growing left
-        } else {
-          if (this.platform.left > this.position[0]) this.platform.left = this.position[0];
-        }
-
-        if (rules.onGrowHorizontal) rules.onGrowHorizontal.call(this, this.platform, this.direction);
-      }
-
-      // Pole growth
-      if (this.pole && this.direction[0] == 0) {
-        // Growing down
-        if (this.direction[1] > 0) {
-          if (this.pole.bottom < this.position[1]) this.pole.bottom = this.position[1];
-
-        // Growing up
-        } else {
-          if (this.pole.top > this.position[1]) this.pole.top = this.position[1];
-        }
-
-        if (rules.onGrowVertical) rules.onGrowVertical.call(this, this.pole, this.direction);
-      }
-      
-    }
-  });
-};
-*/
