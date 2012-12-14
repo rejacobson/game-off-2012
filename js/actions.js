@@ -86,13 +86,15 @@ exports.Actions = {
     return !this.actions.is_near_edge.call(this);
   },
 
-  is_near_edge: function() {
+  is_near_edge: function(tolerance) {
     if (!this.platform) return false;
 
+    if (!tolerance) tolerance = 20;
+
     if (this.facing == -1) {
-      return this.position[0] < this.platform.left + 20;
+      return this.position[0] < this.platform.left + parseInt(tolerance);
     } else {
-      return this.position[0] > this.platform.right - 20;
+      return this.position[0] > this.platform.right - parseInt(tolerance);
     }
   }
 }

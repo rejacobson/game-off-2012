@@ -4,13 +4,13 @@ var actions = require('actions');
 gamejs.preload(['images/mob/buggaloo.png']);
 
 exports.stats = {
-  speed: 100
+  speed: 50
 };
 
 exports.settings = function() {
   return {
     position: [300, 450],
-    hitbox: new gamejs.Rect([0, 0], [32, 28]),
+    hitbox: new gamejs.Rect([0, 0], [22, 20]),
     collision: function(entity) {
       if (entity.state == 'running') {
         this.pushedOff(entity);  

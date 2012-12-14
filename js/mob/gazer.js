@@ -4,13 +4,13 @@ var actions = require('actions');
 gamejs.preload(['images/mob/gazer.png']);
 
 exports.stats = {
-  speed: 100
+  speed: 40
 };
 
 exports.settings = function() {
   return {
     position: [300, 450],
-    hitbox: new gamejs.Rect([0, 0], [28, 32]),
+    hitbox: new gamejs.Rect([0, 0], [20, 25]),
     collision: function(entity) {
       if (entity.state == 'running') {
         this.pushedOff(entity);  

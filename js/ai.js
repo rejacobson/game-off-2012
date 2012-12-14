@@ -1,6 +1,6 @@
 var FAILED = exports.FAILED = false;
 var SUCCESS = exports.SUCCESS = true;
-var RUNNING = exports.RUNNING = 2;
+var RUNNING = exports.RUNNING = null;
 
 var BehaviourTree = exports.BehaviourTree = function(specs, context) {
   this.behaviours = [];
@@ -45,9 +45,8 @@ Behaviour.prototype.reset = function() {
   this.running = 0;
 };
 
+var result;
 Behaviour.prototype.update = function(msDuration) {
-  var result;
-  
   // Run each action until one returns FAILED or RUNNING
   // SUCCESS'ful actions run the next one in line
   for (var i = this.running, len = this.actions.length; i<len; ++i) {
@@ -74,10 +73,11 @@ Behaviour.prototype.update = function(msDuration) {
   return SUCCESS;
 };
 
-Behaviour.prototype.perform = function(method_name) {
-  if (!this.context.actions[method_name]) throw new Error('Character action not implemented: '+method_name);
-  var args = Array.prototype.slice.call(arguments);
-  args.shift();
-  return this.context.actions[method_name].apply(this.context, args);
+var lambda, args = [];
+Behaviour.prototype.perform = function(method_name) { 
+  args = method_name.split(' ');
+  lambda = args.shift();
+  if (!this.context.actions[lambda]) throw new Error('Character action not implemented: '+ lambda);
+  return this.context.actions[lambda].apply(this.context, args);
 };
 
